@@ -1,0 +1,2 @@
+PatientId,SourceStream,SequenceNumber,TransmitterNumber,ReceiverNumber,Tag
+123e4567-e89b-12d3-a456-426655440000,Receiver,1,123456,123456,empty
