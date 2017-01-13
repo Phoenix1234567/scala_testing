@@ -1,19 +1,21 @@
 package com.dexcom.dto
 
+import java.util.Date
+
 /**
   * Created by gaurav.garg on 05-01-2017.
   */
-case class GlucoseRecord(
-                          RecordedSystemTime: String,
-                          RecordedDisplayTime: String,
-                          TransmitterId: String,
-                          TransmitterTime: String,
-                          GlucoseSystemTime: String,
-                          GlucoseDisplayTime: String,
-                          Value: String,
-                          Status: String,
-                          TrendArrow: String,
-                          TrendRate: String,
-                          IsBackfilled: String,
-                          InternalStatus: String
-                        )
+case class GlucoseRecord (
+                           RecordedSystemTime : Date,
+                           RecordedDisplayTime : Date,
+                           TransmitterId : String,
+                           TransmitterTime : Long,
+                           GlucoseSystemTime : Date,
+                           GlucoseDisplayTime : Date,
+                           Value : Int,
+                           Status : String,
+                           TrendArrow : String,
+                           TrendRate : Double,
+                           IsBackfilled : Boolean,
+                           InternalStatus : String
+                         )

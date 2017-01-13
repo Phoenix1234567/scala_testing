@@ -1,5 +1,8 @@
 package com.dexcom.testCases
 
+import java.text.{ParseException, SimpleDateFormat}
+import java.util.{Date, UUID}
+
 import com.dexcom.common
 import com.dexcom.common.{AppCommon, CassandraQueries}
 import com.dexcom.configuration.DexVictoriaConfigurations
@@ -12,10 +15,22 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by gaurav.garg on 05-01-2017.
   */
-object GlucoseRecordTestCase extends App with DexVictoriaConfigurations with CassandraQueries {
+class GlucoseRecordTestCase extends /*App with  */DexVictoriaConfigurations with CassandraQueries {
 
   val logger = LoggerFactory.getLogger("GlucoseRecordTestCase")
 
+  def stringToDate(dateString : String) : Either[Unit, Date]= {
+    val df = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'SSSSSSS'Z'")  //2014-05-16T20:06:17.1592279Z
+    val dfNew = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy")
+    try {
+      val date = df.parse(dateString)
+      val dateNew = dfNew.parse(dfNew.format(date))
+      Right(dateNew)
+    } catch {
+      case e : ParseException =>
+        Left(e.printStackTrace())
+    }
+  }
   /**
     * Fetch patientid, source, etc from Patient.csv file
  *
@@ -27,7 +42,7 @@ object GlucoseRecordTestCase extends App with DexVictoriaConfigurations with Cas
   for(line <- patient_record_csv.getLines().drop(1)) {
     val cols = line.split(AppCommon.Splitter).map(_.trim)
     val patient_record = Patient (
-      PatientId = cols(0),
+      PatientId = UUID.fromString(cols(0)),
       SourceStream = cols(1),
       SequenceNumber = cols(2),
       TransmitterNumber = cols(3),
@@ -52,52 +67,13 @@ object GlucoseRecordTestCase extends App with DexVictoriaConfigurations with Cas
     for(line <- post_record_csv.getLines().drop(1)) {
       val cols = line.split(AppCommon.Splitter).map(_.trim)
       post_record = Post (
-        PostId = cols(0),
+        PostId = UUID.fromString(cols(0)),
         PostedTimestamp = cols(1)
       )
 
     }
-
     post_record_csv.close()
     post_record
-  }
-
-  /**
-    * Fech glucose data from destination csv created from the cassandra table
- *
-    * @return
-    */
-  def EGVRecordsDestination(): List[EGVForPatientBySystemTime] = {
-  val list_egv_record = new ListBuffer[EGVForPatientBySystemTime]
-    val cassandra_connection = new CassandraConnection
-    val session = cassandra_connection.getConnection // get cassandra connection
-
-  val resultSet = session.execute(GET_EGV_FOR_PATIENT_BY_SYSTEM_TIME)
-    while(!resultSet.isExhausted) {
-      val row = resultSet.one()
-      val egv_record = EGVForPatientBySystemTime (
-        PatientId = row.getUUID("patient_id").toString,
-        SystemTime = row.getTimestamp("system_time").toString,
-        PostId = row.getUUID("post_id").toString,
-        DisplayTime = row.getTimestamp("display_time").toString,
-        IngestionTimestamp = row.getTimestamp("ingestion_timestamp").toString,
-        RateUnits = row.getString("rate_units"),
-        Source = row.getString("source"),
-        Status = row.getString("status"),
-        TransmitterId = row.getString("transmitter_id"),
-        TransmitterTicks = row.getLong("transmitter_ticks").toString,
-        Trend = row.getString("trend"),
-        TrendRate = row.getDouble("trend_rate").toString,
-        Units = row.getString("units"),
-        Value = row.getInt("value").toString
-      )
-      list_egv_record += egv_record
-    }
-
-
-
-    cassandra_connection.closeConnection()  //close cassandra connection
-    list_egv_record.toList
   }
 
   /**
@@ -112,17 +88,26 @@ object GlucoseRecordTestCase extends App with DexVictoriaConfigurations with Cas
     for (line <- glucose_record_csv.getLines().drop(1)) {
       val cols = line.split(AppCommon.Splitter).map(_.trim)
       val glucose_record = GlucoseRecord(
-        RecordedSystemTime = cols(0),
-        RecordedDisplayTime = cols(1),
+        RecordedSystemTime =
+          stringToDate(cols(0)) match {
+            case Right(x) => x
+          },
+        RecordedDisplayTime = stringToDate(cols(1)) match {
+          case Right(x) => x
+        },
         TransmitterId = cols(2),
-        TransmitterTime = cols(3),
-        GlucoseSystemTime = cols(4),
-        GlucoseDisplayTime = cols(5),
-        Value = cols(6),
+        TransmitterTime = cols(3).toLong,
+        GlucoseSystemTime = stringToDate(cols(4)) match {
+          case Right(x) => x
+        },
+        GlucoseDisplayTime = stringToDate(cols(5)) match {
+          case Right(x) => x
+        },
+        Value = cols(6).toInt,
         Status = cols(7),
         TrendArrow = cols(8),
-        TrendRate = cols(9),
-        IsBackfilled = cols(10),
+        TrendRate = cols(9).toDouble,
+        IsBackfilled = cols(10).toBoolean,
         InternalStatus = cols(11)
       )
       list_glucose_record += glucose_record
@@ -168,7 +153,42 @@ object GlucoseRecordTestCase extends App with DexVictoriaConfigurations with Cas
     list_egv_for_patient_source_data.toList
   }
 
-  val list_egv_for_patient_source_data = this.EGVRecordsSource()
+  /**
+    * Fetch glucose data from destination csv created from the cassandra table
+    *
+    * @return
+    */
+  def EGVRecordsDestination(): List[EGVForPatientBySystemTime] = {
+    val list_egv_record = new ListBuffer[EGVForPatientBySystemTime]
+    val cassandra_connection = new CassandraConnection
+    val session = cassandra_connection.getConnection // get cassandra connection
+
+    val resultSet = session.execute(GET_EGV_FOR_PATIENT_BY_SYSTEM_TIME)
+    while(!resultSet.isExhausted) {
+      val row = resultSet.one()
+      val egv_record = EGVForPatientBySystemTime (
+        PatientId = row.getUUID("patient_id"),
+        SystemTime = row.getTimestamp("system_time"),
+        PostId = row.getUUID("post_id"),
+        DisplayTime = row.getTimestamp("display_time"),
+        IngestionTimestamp = row.getTimestamp("ingestion_timestamp"),
+        RateUnits = row.getString("rate_units"),
+        Source = row.getString("source"),
+        Status = row.getString("status"),
+        TransmitterId = row.getString("transmitter_id"),
+        TransmitterTicks = row.getLong("transmitter_ticks"),
+        Trend = row.getString("trend"),
+        TrendRate = row.getDouble("trend_rate"),
+        Units = row.getString("units"),
+        Value = row.getInt("value")
+      )
+      list_egv_record += egv_record
+    }
+
+    cassandra_connection.closeConnection()  //close cassandra connection
+    list_egv_record.toList
+  }
+  /*val list_egv_for_patient_source_data = this.EGVRecordsSource()
   val list_egv_for_patient_destination_data = this.EGVRecordsDestination()
 
   logger.info("---------------Count comparison of source and destination---------------")
@@ -182,6 +202,7 @@ object GlucoseRecordTestCase extends App with DexVictoriaConfigurations with Cas
 
   logger.info("\n\n-------------------Data at source reach at destination-------------------")
   //verify source glucose data whether is present at destination
+  println(list_egv_for_patient_destination_data)
   var count : Int = 0
   for( i <- list_egv_for_patient_source_data.indices) {
     if (list_egv_for_patient_destination_data.contains(list_egv_for_patient_source_data(i))) {
@@ -198,5 +219,5 @@ object GlucoseRecordTestCase extends App with DexVictoriaConfigurations with Cas
     } else {
       logger.error(s"Record not found in cassandra : ${list_egv_for_patient_source_data(i)}")
     }
-  }
+  }*/
 }
