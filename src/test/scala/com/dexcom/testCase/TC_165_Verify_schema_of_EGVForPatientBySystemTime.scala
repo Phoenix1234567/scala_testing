@@ -1,3 +1,4 @@
+
 package com.dexcom.testCase
 
 import java.util.{Date, UUID}
@@ -13,25 +14,25 @@ class TC_165_Verify_schema_of_EGVForPatientBySystemTime extends FunSuite {
   //initiate
   val glucoseRecordTestCase = new GlucoseRecordTestCase
   val list_glucose_record_cassandra = glucoseRecordTestCase.EGVRecordsDestination()
-  println(list_glucose_record_cassandra)
+ println("cassandra----"+list_glucose_record_cassandra)
   val list_glucose_record_csv = glucoseRecordTestCase.EGVRecordsSource()
-  println(list_glucose_record_csv)
+ println("csv----"+list_glucose_record_csv)
+
   test("should verify PatientId of the EGVForPatientBySystemTime in cassandra is populating properly") {
 
     //verify the results
     list_glucose_record_cassandra.foreach {
       x =>
-        assert(x.PatientId.isInstanceOf[UUID])
         assert(x.PatientId !== null)
         assert(x.PatientId !== "")
-
+        assert(x.PatientId.isInstanceOf[UUID])
     }
 
     list_glucose_record_csv.foreach {
       x =>
         list_glucose_record_cassandra.foreach {
           y =>
-            if(x === y) {
+            if (x === y) {
               assert(x.PatientId === y.PatientId)
             } else {
               fail(s"No record found with $x")
@@ -44,26 +45,49 @@ class TC_165_Verify_schema_of_EGVForPatientBySystemTime extends FunSuite {
   test("should test dataType of the column SystemTime in EGVForPatientBySystemTime in cassandra") {
 
     //verify the results
-    assert(list_glucose_record_cassandra.head.SystemTime.isInstanceOf[Date])
     list_glucose_record_cassandra.foreach {
       x =>
         assert(x.SystemTime !== null)
         assert(x.SystemTime !== "")
+        assert(x.SystemTime.isInstanceOf[Date])
     }
-
+    /*list_glucose_record_csv.foreach {
+      x =>
+        list_glucose_record_cassandra.foreach {
+          y =>
+            if (x === y) {
+              assert(x.SystemTime === y.SystemTime)
+            } else {
+              fail(s"No record found with $x")
+            }
+        }
+    }*/
   }
 
   test("should test dataType of the column PostId in EGVForPatientBySystemTime in cassandra") {
 
     //verify the results
-    assert(list_glucose_record_cassandra.head.PostId.isInstanceOf[UUID])
 
+    list_glucose_record_cassandra.foreach {
+      x =>
+
+        assert(x.PostId !== null)
+        assert(x.PostId !== "")
+    }
+    assert(list_glucose_record_cassandra.head.PostId.isInstanceOf[UUID])
   }
 
   test("should test dataType of the column DisplayTime in EGVForPatientBySystemTime in cassandra") {
 
     //verify the results
-    assert(list_glucose_record_cassandra.head.DisplayTime.isInstanceOf[Date])
+
+    list_glucose_record_cassandra.foreach {
+      x =>
+
+        assert(x.DisplayTime !== null)
+        assert(x.DisplayTime !== "")
+        assert(x.DisplayTime.isInstanceOf[Date])
+    }
 
   }
 
@@ -93,11 +117,14 @@ class TC_165_Verify_schema_of_EGVForPatientBySystemTime extends FunSuite {
   test("should test dataType of the column Status in EGVForPatientBySystemTime in cassandra") {
 
     //verify the results
-    if(list_glucose_record_cassandra.head.Status != null)
+    if (list_glucose_record_cassandra.head.Status != null){
       assert(list_glucose_record_cassandra.head.Status.isInstanceOf[String])
-
-
+      assert(list_glucose_record_cassandra.head.Status === "High" || list_glucose_record_cassandra.head.Status === "Low" || list_glucose_record_cassandra.head.Status === "OutOfCalibration" || list_glucose_record_cassandra.head.Status === "SensorWarmUp" || list_glucose_record_cassandra.head.Status === "SensorNoise" ||list_glucose_record_cassandra.head.Status === "")
+    //assert(list_glucose_record_cassandra.head.Status.contains("Low","High"))
   }
+  else
+  succeed
+}
 
   test("should test dataType of the column TransmitterId in EGVForPatientBySystemTime in cassandra") {
 
@@ -117,9 +144,25 @@ class TC_165_Verify_schema_of_EGVForPatientBySystemTime extends FunSuite {
   test("should test dataType of the column Trend in EGVForPatientBySystemTime in cassandra") {
 
     //verify the results
-    assert(list_glucose_record_cassandra.head.Trend.isInstanceOf[String])
+     list_glucose_record_cassandra.foreach {
+      x =>
+        assert(x.Trend.isInstanceOf[String])
+        assert(x.Trend === "None" || x.Trend === "DoubleUp" || x.Trend === "SingleUp" || x.Trend === "FortyFiveUp" || x.Trend === "Flat")
+    }
 
-  }
+     /*list_glucose_record_csv.foreach {
+      x =>
+        list_glucose_record_cassandra.foreach {
+          y =>
+            if (x === y) {
+              assert(x.Trend === y.Trend)
+            } else {
+              fail(s"No record found with $x")
+            }
+        }
+    }*/
+
+    }
 
   test("should test dataType of the column TrendRate in EGVForPatientBySystemTime in cassandra") {
 
@@ -144,4 +187,3 @@ class TC_165_Verify_schema_of_EGVForPatientBySystemTime extends FunSuite {
 
   }
 }
-

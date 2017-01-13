@@ -7,7 +7,7 @@ import com.dexcom.common
 import com.dexcom.common.{AppCommon, CassandraQueries}
 import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.connection.CassandraConnection
-import com.dexcom.dto.{EGVForPatientBySystemTime, GlucoseRecord, Patient, Post}
+import com.dexcom.dto._
 import com.dexcom.utils.AppUtils
 import org.slf4j.LoggerFactory
 
@@ -156,8 +156,10 @@ class GlucoseRecordTestCase extends /*App with  */DexVictoriaConfigurations with
     val resultSet = session.execute(GET_EGV_FOR_PATIENT_BY_SYSTEM_TIME)
     while(!resultSet.isExhausted) {
       val row = resultSet.one()
+      println("*********"+row.getTimestamp("system_time"))
       val egv_record = EGVForPatientBySystemTime (
         PatientId = row.getUUID("patient_id"),
+
         SystemTime = row.getTimestamp("system_time"),
         PostId = row.getUUID("post_id"),
         DisplayTime = row.getTimestamp("display_time"),
@@ -178,6 +180,40 @@ class GlucoseRecordTestCase extends /*App with  */DexVictoriaConfigurations with
     cassandra_connection.closeConnection()  //close cassandra connection
     list_egv_record.toList
   }
+
+  /*
+  *  To fetch data from Cassandra - EventForPatientBySystemTime
+  * */
+
+  def EventRecordsDestination(): List[EventForPatientBySystemTime] = {
+    val list_event_record = new ListBuffer[EventForPatientBySystemTime]
+    val cassandra_connection = new CassandraConnection
+    val session = cassandra_connection.getConnection // get cassandra connection
+
+    val resultSet = session.execute(GET_EVENT_FOR_PATIENT_BY_SYSTEM_TIME)
+    while(!resultSet.isExhausted) {
+      val row = resultSet.one()
+      println("*********"+row.getTimestamp("system_time"))
+      val event_record = EventForPatientBySystemTime (
+        PatientId = row.getUUID("patient_id"),
+        SystemTime = row.getTimestamp("system_time"),
+        name = row.getString("name"),
+        model = row.getString("model"),
+        DisplayTime = row.getTimestamp("display_time"),
+        IngestionTimestamp = row.getTimestamp("ingestion_timestamp"),
+        PostId = row.getUUID("post_id"),
+        subtype = row.getString("subtype"),
+        unit = row.getString("unit"),
+        Value = row.getString("value")
+      )
+      list_event_record += event_record
+    }
+
+    cassandra_connection.closeConnection()  //close cassandra connection
+    list_event_record.toList
+  }
+
+
   /*val list_egv_for_patient_source_data = this.EGVRecordsSource()
   val list_egv_for_patient_destination_data = this.EGVRecordsDestination()
 
