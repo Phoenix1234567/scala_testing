@@ -8,8 +8,9 @@ import java.util.Date
   */
 object AppUtils {
 
+
   def stringToDate(dateString : String) : Either[Unit, Date]= {
-    val df = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'SSSSSSS'Z'")  //2014-05-16T20:06:17.1592279Z
+    val df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSX")  //2014-05-16T20:06:17.1592279Z
     val dfNew = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy")
     try {
       val date = df.parse(dateString)
@@ -20,5 +21,4 @@ object AppUtils {
         Left(e.printStackTrace())
     }
   }
-
 }
