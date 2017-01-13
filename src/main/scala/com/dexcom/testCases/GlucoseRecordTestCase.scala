@@ -8,6 +8,7 @@ import com.dexcom.common.{AppCommon, CassandraQueries}
 import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.connection.CassandraConnection
 import com.dexcom.dto.{EGVForPatientBySystemTime, GlucoseRecord, Patient, Post}
+import com.dexcom.utils.AppUtils
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ListBuffer
@@ -19,18 +20,7 @@ class GlucoseRecordTestCase extends /*App with  */DexVictoriaConfigurations with
 
   val logger = LoggerFactory.getLogger("GlucoseRecordTestCase")
 
-  def stringToDate(dateString : String) : Either[Unit, Date]= {
-    val df = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'SSSSSSS'Z'")  //2014-05-16T20:06:17.1592279Z
-    val dfNew = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy")
-    try {
-      val date = df.parse(dateString)
-      val dateNew = dfNew.parse(dfNew.format(date))
-      Right(dateNew)
-    } catch {
-      case e : ParseException =>
-        Left(e.printStackTrace())
-    }
-  }
+
   /**
     * Fetch patientid, source, etc from Patient.csv file
  *
@@ -89,18 +79,18 @@ class GlucoseRecordTestCase extends /*App with  */DexVictoriaConfigurations with
       val cols = line.split(AppCommon.Splitter).map(_.trim)
       val glucose_record = GlucoseRecord(
         RecordedSystemTime =
-          stringToDate(cols(0)) match {
+          AppUtils.stringToDate(cols(0)) match {
             case Right(x) => x
           },
-        RecordedDisplayTime = stringToDate(cols(1)) match {
+        RecordedDisplayTime = AppUtils.stringToDate(cols(1)) match {
           case Right(x) => x
         },
         TransmitterId = cols(2),
         TransmitterTime = cols(3).toLong,
-        GlucoseSystemTime = stringToDate(cols(4)) match {
+        GlucoseSystemTime = AppUtils.stringToDate(cols(4)) match {
           case Right(x) => x
         },
-        GlucoseDisplayTime = stringToDate(cols(5)) match {
+        GlucoseDisplayTime = AppUtils.stringToDate(cols(5)) match {
           case Right(x) => x
         },
         Value = cols(6).toInt,
