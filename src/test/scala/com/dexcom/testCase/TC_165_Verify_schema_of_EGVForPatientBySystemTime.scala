@@ -1,9 +1,8 @@
-
 package com.dexcom.testCase
 
 import java.util.{Date, UUID}
 
-import com.dexcom.testCases.GlucoseRecordTestCase
+import com.dexcom.helper.GlucoseHelper
 import org.scalatest.FunSuite
 
 /**
@@ -12,11 +11,9 @@ import org.scalatest.FunSuite
 class TC_165_Verify_schema_of_EGVForPatientBySystemTime extends FunSuite {
 
   //initiate
-  val glucoseRecordTestCase = new GlucoseRecordTestCase
+  val glucoseRecordTestCase = new GlucoseHelper
   val list_glucose_record_cassandra = glucoseRecordTestCase.EGVRecordsDestination()
- println("cassandra----"+list_glucose_record_cassandra)
   val list_glucose_record_csv = glucoseRecordTestCase.EGVRecordsSource()
- println("csv----"+list_glucose_record_csv)
 
   test("should verify PatientId of the EGVForPatientBySystemTime in cassandra is populating properly") {
 
@@ -27,6 +24,8 @@ class TC_165_Verify_schema_of_EGVForPatientBySystemTime extends FunSuite {
         assert(x.PatientId !== "")
         assert(x.PatientId.isInstanceOf[UUID])
     }
+
+    println(list_glucose_record_cassandra.indexWhere(_.equals(list_glucose_record_csv(0))))
 
     list_glucose_record_csv.foreach {
       x =>

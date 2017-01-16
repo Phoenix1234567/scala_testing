@@ -1,14 +1,13 @@
-package com.dexcom.testCases
+package com.dexcom.helper
 
-import java.text.{ParseException, SimpleDateFormat}
-import java.util.{Date, UUID}
+import java.util.UUID
 
 import com.dexcom.common
-import com.dexcom.common.{AppCommon, CassandraQueries}
+import com.dexcom.common.{Constants, CassandraQueries}
 import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.connection.CassandraConnection
 import com.dexcom.dto._
-import com.dexcom.utils.AppUtils
+import com.dexcom.utils.Utils
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ListBuffer
@@ -16,9 +15,9 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by gaurav.garg on 05-01-2017.
   */
-class GlucoseRecordTestCase extends /*App with  */DexVictoriaConfigurations with CassandraQueries {
+class GlucoseHelper extends DexVictoriaConfigurations with CassandraQueries {
 
-  val logger = LoggerFactory.getLogger("GlucoseRecordTestCase")
+  val logger = LoggerFactory.getLogger("GlucoseHelper")
 
 
   /**
@@ -30,7 +29,7 @@ class GlucoseRecordTestCase extends /*App with  */DexVictoriaConfigurations with
   val list_patient_record = new ListBuffer[Patient]
   val patient_record_csv = scala.io.Source.fromFile(patient_records_path)
   for(line <- patient_record_csv.getLines().drop(1)) {
-    val cols = line.split(AppCommon.Splitter).map(_.trim)
+    val cols = line.split(Constants.Splitter).map(_.trim)
     val patient_record = Patient (
       PatientId = UUID.fromString(cols(0)),
       SourceStream = cols(1),
@@ -55,7 +54,7 @@ class GlucoseRecordTestCase extends /*App with  */DexVictoriaConfigurations with
     var post_record : Post= null
     val post_record_csv = scala.io.Source.fromFile(post_path)
     for(line <- post_record_csv.getLines().drop(1)) {
-      val cols = line.split(AppCommon.Splitter).map(_.trim)
+      val cols = line.split(Constants.Splitter).map(_.trim)
       post_record = Post (
         PostId = UUID.fromString(cols(0)),
         PostedTimestamp = cols(1)
@@ -76,21 +75,21 @@ class GlucoseRecordTestCase extends /*App with  */DexVictoriaConfigurations with
 
     val glucose_record_csv = scala.io.Source.fromFile(glucose_record_path)
     for (line <- glucose_record_csv.getLines().drop(1)) {
-      val cols = line.split(AppCommon.Splitter).map(_.trim)
+      val cols = line.split(Constants.Splitter).map(_.trim)
       val glucose_record = GlucoseRecord(
         RecordedSystemTime =
-          AppUtils.stringToDate(cols(0)) match {
+          Utils.stringToDate(cols(0)) match {
             case Right(x) => x
           },
-        RecordedDisplayTime = AppUtils.stringToDate(cols(1)) match {
+        RecordedDisplayTime = Utils.stringToDate(cols(1)) match {
           case Right(x) => x
         },
         TransmitterId = cols(2),
         TransmitterTime = cols(3).toLong,
-        GlucoseSystemTime = AppUtils.stringToDate(cols(4)) match {
+        GlucoseSystemTime = Utils.stringToDate(cols(4)) match {
           case Right(x) => x
         },
-        GlucoseDisplayTime = AppUtils.stringToDate(cols(5)) match {
+        GlucoseDisplayTime = Utils.stringToDate(cols(5)) match {
           case Right(x) => x
         },
         Value = cols(6).toInt,
@@ -156,7 +155,6 @@ class GlucoseRecordTestCase extends /*App with  */DexVictoriaConfigurations with
     val resultSet = session.execute(GET_EGV_FOR_PATIENT_BY_SYSTEM_TIME)
     while(!resultSet.isExhausted) {
       val row = resultSet.one()
-      println("*********"+row.getTimestamp("system_time"))
       val egv_record = EGVForPatientBySystemTime (
         PatientId = row.getUUID("patient_id"),
 
@@ -185,7 +183,7 @@ class GlucoseRecordTestCase extends /*App with  */DexVictoriaConfigurations with
   *  To fetch data from Cassandra - EventForPatientBySystemTime
   * */
 
-  def EventRecordsDestination(): List[EventForPatientBySystemTime] = {
+ /* def EventRecordsDestination(): List[EventForPatientBySystemTime] = {
     val list_event_record = new ListBuffer[EventForPatientBySystemTime]
     val cassandra_connection = new CassandraConnection
     val session = cassandra_connection.getConnection // get cassandra connection
@@ -211,7 +209,7 @@ class GlucoseRecordTestCase extends /*App with  */DexVictoriaConfigurations with
 
     cassandra_connection.closeConnection()  //close cassandra connection
     list_event_record.toList
-  }
+  }*/
 
 
   /*val list_egv_for_patient_source_data = this.EGVRecordsSource()
