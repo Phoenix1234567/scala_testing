@@ -1,6 +1,6 @@
 package com.dexcom.controller
 
-import com.dexcom.helper.GlucoseHelper
+import com.dexcom.helper.GlucoseDataHelper
 
 /**
   * Created by gaurav.garg on 16-01-2017.
@@ -8,10 +8,10 @@ import com.dexcom.helper.GlucoseHelper
 class DataController(tableName : String, source : String) {
 
 
-  def get = {
+  /*def get = {
     tableName matches {
       case "Glucose" =>
         val glucoseHelper = new GlucoseHelper
     }
-  }
+  }*/
 }

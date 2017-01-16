@@ -15,55 +15,11 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by gaurav.garg on 05-01-2017.
   */
-class GlucoseHelper extends DexVictoriaConfigurations with CassandraQueries {
+class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries {
 
   val logger = LoggerFactory.getLogger("GlucoseHelper")
 
 
-  /**
-    * Fetch patientid, source, etc from Patient.csv file
- *
-    * @return list of the object patient objects
-    */
-  def patientRecords() : List[Patient] = {
-  val list_patient_record = new ListBuffer[Patient]
-  val patient_record_csv = scala.io.Source.fromFile(patient_records_path)
-  for(line <- patient_record_csv.getLines().drop(1)) {
-    val cols = line.split(Constants.Splitter).map(_.trim)
-    val patient_record = Patient (
-      PatientId = UUID.fromString(cols(0)),
-      SourceStream = cols(1),
-      SequenceNumber = cols(2),
-      TransmitterNumber = cols(3),
-      ReceiverNumber = cols(4),
-      Tag = cols(5)
-    )
-    list_patient_record += patient_record
-  }
-  patient_record_csv.close()
-  list_patient_record.toList
-
-}
-
-  /**
-    * Fetch postid, postedTimestamp from postIds.csv
- *
-    * @return list of post object
-    */
-  def postRecords() : Post = {
-    var post_record : Post= null
-    val post_record_csv = scala.io.Source.fromFile(post_path)
-    for(line <- post_record_csv.getLines().drop(1)) {
-      val cols = line.split(Constants.Splitter).map(_.trim)
-      post_record = Post (
-        PostId = UUID.fromString(cols(0)),
-        PostedTimestamp = cols(1)
-      )
-
-    }
-    post_record_csv.close()
-    post_record
-  }
 
   /**
     * Fetch glucose data from the Glucose.csv
@@ -113,8 +69,8 @@ class GlucoseHelper extends DexVictoriaConfigurations with CassandraQueries {
     */
   def EGVRecordsSource() : List[EGVForPatientBySystemTime]= {
     val list_glucose_record = this.GlucoseRecords()
-    val list_patient = this.patientRecords()
-    val post = this.postRecords()
+    val list_patient = Utils.patientRecords()
+    val post = Utils.postRecords()
     val list_egv_for_patient_source_data  = new ListBuffer[EGVForPatientBySystemTime]
     for(
       i <- list_patient.indices;

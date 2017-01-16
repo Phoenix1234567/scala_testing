@@ -2,7 +2,7 @@ package com.dexcom.testCase
 
 import java.util.{Date, UUID}
 
-import com.dexcom.helper.GlucoseHelper
+import com.dexcom.helper.GlucoseDataHelper
 import org.scalatest.FunSuite
 
 /**
@@ -11,7 +11,7 @@ import org.scalatest.FunSuite
 class TC_165_Verify_schema_of_EGVForPatientBySystemTime extends FunSuite {
 
   //initiate
-  val glucoseRecordTestCase = new GlucoseHelper
+  val glucoseRecordTestCase = new GlucoseDataHelper
   val list_glucose_record_cassandra = glucoseRecordTestCase.EGVRecordsDestination()
   val list_glucose_record_csv = glucoseRecordTestCase.EGVRecordsSource()
 

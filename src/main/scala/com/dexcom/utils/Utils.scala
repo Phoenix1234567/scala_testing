@@ -1,14 +1,19 @@
 package com.dexcom.utils
 
 import java.text.ParseException
-import java.util.Date
+import java.util.{Date, UUID}
 
+import com.dexcom.common.{CassandraQueries, Constants}
+import com.dexcom.dto.{Patient, Post}
 import org.joda.time.format.DateTimeFormat
+import com.dexcom.configuration.DexVictoriaConfigurations
+
+import scala.collection.mutable.ListBuffer
 
 /**
   * Created by sarvaraj on 13/01/17.
   */
-object Utils{
+object Utils extends DexVictoriaConfigurations   {
 
   def stringToDate(dateString : String) : Either[Unit, Date]= {
 
@@ -23,4 +28,52 @@ object Utils{
         Left(e.printStackTrace())
     }
   }
+
+
+  /**
+    * Fetch patientid, source, etc from Patient.csv file
+    *
+    * @return list of the object patient objects
+    */
+  def patientRecords() : List[Patient] = {
+    val list_patient_record = new ListBuffer[Patient]
+    val patient_record_csv = scala.io.Source.fromFile(patient_records_path)
+    for(line <- patient_record_csv.getLines().drop(1)) {
+      val cols = line.split(Constants.Splitter).map(_.trim)
+      val patient_record = Patient (
+        PatientId = UUID.fromString(cols(0)),
+        SourceStream = cols(1),
+        SequenceNumber = cols(2),
+        TransmitterNumber = cols(3),
+        ReceiverNumber = cols(4),
+        Tag = cols(5)
+      )
+      list_patient_record += patient_record
+    }
+    patient_record_csv.close()
+    list_patient_record.toList
+
+  }
+
+  /**
+    * Fetch postid, postedTimestamp from postIds.csv
+    *
+    * @return list of post object
+    */
+  def postRecords() : Post = {
+    var post_record : Post= null
+    val post_record_csv = scala.io.Source.fromFile(post_path)
+    for(line <- post_record_csv.getLines().drop(1)) {
+      val cols = line.split(Constants.Splitter).map(_.trim)
+      post_record = Post (
+        PostId = UUID.fromString(cols(0)),
+        PostedTimestamp = cols(1)
+      )
+
+    }
+    post_record_csv.close()
+    post_record
+  }
+
+
 }
