@@ -1,7 +1,7 @@
 package com.dexcom.testCase
 
 import java.text.{ParseException, SimpleDateFormat}
-import java.util.Date
+import java.util.{Date, UUID}
 
 import com.dexcom.common.CassandraQueries
 import com.dexcom.connection.CassandraConnection
@@ -13,7 +13,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by sarvaraj on 11/01/17.
   */
-class TC_327 extends FunSuite with CassandraQueries with BeforeAndAfterAll {
+class Device_Summary extends FunSuite with CassandraQueries with BeforeAndAfterAll {
 
   val cassandraConnection = new CassandraConnection().getConnection
   var list_device_summary: ListBuffer[DeviceSummary] = null
@@ -37,14 +37,28 @@ class TC_327 extends FunSuite with CassandraQueries with BeforeAndAfterAll {
     }
   }
 
-  test("Verify schema of model od device_sumary") {
+
+
+
+
+  test("TC_327 : Verify schema and value of model of device_sumary") {
     //initiate
     assert(list_device_summary.head.Model.isInstanceOf[String])
     assert(list_device_summary.head.Model === "G5" || list_device_summary.head.Model === "G4")
     // fetch data frm cassandra
-
   }
 
+  test("TC_328 : Verify schema  and value of serialNumber of device_sumary") {
+    //initiate
+    assert(list_device_summary.head.SerialNumber.isInstanceOf[String])
+    assert(list_device_summary.head.SerialNumber.length >4 && list_device_summary.head.SerialNumber.length <=6 )
+    // fetch data frm cassandra
+  }
 
-
+  test("TC_380 : Verify schema and value of serialNumber of device_sumary") {
+    //initiate
+    assert(list_device_summary.head.PatientId.isInstanceOf[UUID])
+  //  assert(list_device_summary.head.PatientId.equals(123e4567-e89b-12d3-a456-426655440000))
+    // fetch data frm cassandra
+  }
 }

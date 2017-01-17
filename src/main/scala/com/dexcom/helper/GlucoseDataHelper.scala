@@ -1,9 +1,9 @@
 package com.dexcom.helper
 
-import java.util.UUID
+import java.util.{Date, UUID}
 
 import com.dexcom.common
-import com.dexcom.common.{Constants, CassandraQueries}
+import com.dexcom.common.{CassandraQueries, Constants}
 import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.connection.CassandraConnection
 import com.dexcom.dto._
@@ -36,17 +36,21 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
         RecordedSystemTime =
           Utils.stringToDate(cols(0)) match {
             case Right(x) => x
+            case Left(e) => new Date(11111111)
           },
         RecordedDisplayTime = Utils.stringToDate(cols(1)) match {
           case Right(x) => x
+          case Left(e) => new Date(11111111)
         },
         TransmitterId = cols(2),
         TransmitterTime = cols(3).toLong,
         GlucoseSystemTime = Utils.stringToDate(cols(4)) match {
           case Right(x) => x
+          case Left(e) => new Date(11111111)
         },
         GlucoseDisplayTime = Utils.stringToDate(cols(5)) match {
           case Right(x) => x
+          case Left(e) => new Date(11111111)
         },
         Value = cols(6).toInt,
         Status = cols(7),

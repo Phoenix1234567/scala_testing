@@ -10,7 +10,19 @@ trait DexVictoriaConfigurations {
   val conf = ConfigFactory.load("application.conf")
 
   //read CSV path for Glucose Record
-  lazy val glucose_record_path = conf.getString("victoriaSourceCSVs.glucosePath")
+  lazy val glucose_record_path = conf.getString("victoriaSourceCSVs.allCSVsPath")+"/GlucoseRecord.csv"
+
+  //read CSV path for Device_Settings_record
+  lazy val device_settings_record_path = conf.getString("victoriaSourceCSVs.allCSVsPath")+"/DeviceSettingsRecord.csv"
+
+  //read CSV path for User_event_Record
+  lazy val user_event_path = conf.getString("victoriaSourceCSVs.allCSVsPath")+"/UserEventRecord.csv"
+
+  //read CSV path for  Meter_Record
+  lazy val meter_record_path = conf.getString("victoriaSourceCSVs.allCSVsPath")+"/MeterRecord.csv"
+
+  //read CSV path for Sensor_Record
+  lazy val sensor_record_path = conf.getString("victoriaSourceCSVs.allCSVsPath")+"/SensorRecord.csv"
 
   //read CSV path for egv_for_patient_by_system_time
   lazy val egv_for_patient_by_system_time = conf.getString("victoriaDestinationCSVs.egv_for_patient_by_system_time")
