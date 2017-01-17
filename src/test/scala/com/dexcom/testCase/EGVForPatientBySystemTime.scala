@@ -8,14 +8,14 @@ import org.scalatest.FunSuite
 /**
   * Created by gaurav.garg on 10-01-2017.
   */
-class TC_165_Verify_schema_of_EGVForPatientBySystemTime extends FunSuite {
+class EGVForPatientBySystemTime extends FunSuite {
 
   //initiate
   val glucoseRecordTestCase = new GlucoseDataHelper
   val list_glucose_record_cassandra = glucoseRecordTestCase.EGVRecordsDestination()
   val list_glucose_record_csv = glucoseRecordTestCase.EGVRecordsSource()
 
-  test("should verify PatientId of the EGVForPatientBySystemTime in cassandra is populating properly") {
+  test("TC_378 --~> should verify PatientId of the EGVForPatientBySystemTime in cassandra is populating properly") {
 
     //verify the results
     list_glucose_record_cassandra.foreach {
@@ -25,20 +25,16 @@ class TC_165_Verify_schema_of_EGVForPatientBySystemTime extends FunSuite {
         assert(x.PatientId.isInstanceOf[UUID])
     }
 
-    println(list_glucose_record_cassandra.indexWhere(_.equals(list_glucose_record_csv(0))))
-
     list_glucose_record_csv.foreach {
       x =>
-        list_glucose_record_cassandra.foreach {
+        val index = list_glucose_record_cassandra.indexWhere{
           y =>
-            if (x === y) {
-              assert(x.PatientId === y.PatientId)
-            } else {
-              fail(s"No record found with $x")
-            }
+              y.PatientId.equals(x.PatientId) &&
+            y.SystemTime.equals(x.SystemTime) &&
+            y.PostId.equals(x.PostId)
         }
+        assert(x.PatientId === list_glucose_record_cassandra(index).PatientId)
     }
-
   }
 
   test("should test dataType of the column SystemTime in EGVForPatientBySystemTime in cassandra") {
@@ -50,17 +46,17 @@ class TC_165_Verify_schema_of_EGVForPatientBySystemTime extends FunSuite {
         assert(x.SystemTime !== "")
         assert(x.SystemTime.isInstanceOf[Date])
     }
-    /*list_glucose_record_csv.foreach {
+    list_glucose_record_csv.foreach {
       x =>
         list_glucose_record_cassandra.foreach {
           y =>
-            if (x === y) {
+            if (x == y) {
               assert(x.SystemTime === y.SystemTime)
             } else {
               fail(s"No record found with $x")
             }
         }
-    }*/
+    }
   }
 
   test("should test dataType of the column PostId in EGVForPatientBySystemTime in cassandra") {
