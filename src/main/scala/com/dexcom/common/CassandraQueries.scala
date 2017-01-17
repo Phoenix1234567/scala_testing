@@ -12,6 +12,8 @@ trait CassandraQueries {
 
   lazy val GET_EVENT_FOR_PATIENT_BY_SYSTEM_TIME ="SELECT * FROM gg_test.event_for_patient_by_system_time"
 
+  // query for fetching data from egv_for_patient_by_display_time
+  lazy val GET_EGV_FOR_PATIENT_BY_DISPLAY_TIME = "SELECT * FROM gg_test.egv_for_patient_by_display_time"
 
 
 }

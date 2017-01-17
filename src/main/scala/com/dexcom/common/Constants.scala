@@ -13,7 +13,7 @@ object Constants {
 
 }
 
-object EGVForPatientBySystemTime {
+object EGVForPatient {
   val RateUnits = "mg/dL/min"
   val Units = "mg/dL"
 }

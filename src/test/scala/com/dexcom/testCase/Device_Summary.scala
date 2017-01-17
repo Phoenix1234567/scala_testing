@@ -5,7 +5,7 @@ import java.util.{Date, UUID}
 
 import com.dexcom.common.CassandraQueries
 import com.dexcom.connection.CassandraConnection
-import com.dexcom.dto.{DeviceSummary, EGVForPatientBySystemTime}
+import com.dexcom.dto.{DeviceSummary, EGVForPatient}
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 import scala.collection.mutable.ListBuffer
