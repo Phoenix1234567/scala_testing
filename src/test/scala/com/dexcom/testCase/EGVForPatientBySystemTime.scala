@@ -12,8 +12,8 @@ class EGVForPatientBySystemTime extends FunSuite {
 
   //initiate
   val glucoseRecordTestCase = new GlucoseDataHelper
-  val list_glucose_record_cassandra = glucoseRecordTestCase.EGVForPatientBySystemTime()
-  val list_glucose_record_csv = glucoseRecordTestCase.EGVForPatient()
+  val list_glucose_record_cassandra = glucoseRecordTestCase.getRecordsFromCassandra
+  val list_glucose_record_csv = glucoseRecordTestCase.getRecordsFromCSV
 
   test("TC_378 : should verify PatientId of the EGVForPatient in cassandra is populating properly") {
 
@@ -26,9 +26,9 @@ class EGVForPatientBySystemTime extends FunSuite {
     }
 
     list_glucose_record_csv.foreach {
-        x =>
-          val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-          assert(x.PatientId === list_glucose_record_cassandra(index).PatientId)
+      x =>
+        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
+        assert(x.PatientId === list_glucose_record_cassandra(index).PatientId)
     }
   }
 
@@ -118,7 +118,7 @@ class EGVForPatientBySystemTime extends FunSuite {
         assert(x.RateUnits === list_glucose_record_cassandra(index).RateUnits)
         assert(
           list_glucose_record_cassandra(index).RateUnits === "mg/dL/min" ||
-          list_glucose_record_cassandra(index).RateUnits === "mmol/L/min"
+            list_glucose_record_cassandra(index).RateUnits === "mmol/L/min"
         )
     }
   }
@@ -149,7 +149,7 @@ class EGVForPatientBySystemTime extends FunSuite {
     //verify the results
     list_glucose_record_cassandra.foreach {
       x =>
-        if(x.Status != null) {
+        if (x.Status != null) {
           assert(x.Status.isInstanceOf[String])
         }
 
@@ -157,75 +157,142 @@ class EGVForPatientBySystemTime extends FunSuite {
         assert(x.Status === list_glucose_record_cassandra(index).Status)
 
         assert(
-          x.Status === "High" ||
-          x.Status === "Low" ||
-          x.Status === "OutOfCalibration" ||
-          x.Status === "SensorWarmUp" ||
-          x.Status === "SensorNoise" ||
-          x.Status === "" ||
-          x.Status === null
+          list_glucose_record_cassandra(index).Status === "High" ||
+            list_glucose_record_cassandra(index).Status === "Low" ||
+            list_glucose_record_cassandra(index).Status === "OutOfCalibration" ||
+            list_glucose_record_cassandra(index).Status === "SensorWarmUp" ||
+            list_glucose_record_cassandra(index).Status === "SensorNoise" ||
+            list_glucose_record_cassandra(index).Status === "" ||
+            list_glucose_record_cassandra(index).Status === null
         )
     }
-}
-
-  test("should test dataType of the column TransmitterId in EGVForPatient in cassandra") {
-
-
-    //verify the results
-    assert(list_glucose_record_cassandra.head.TransmitterId.isInstanceOf[String])
-
   }
 
-  test("should test dataType of the column TransmitterTicks in EGVForPatient in cassandra") {
-
+  test("TC_375 : should verify TransmitterId of the EGVForPatient in cassandra is populating properly") {
     //verify the results
-    assert(list_glucose_record_cassandra.head.TransmitterTicks.isInstanceOf[Long])
-
-  }
-
-  test("should test dataType of the column Trend in EGVForPatient in cassandra") {
-
-    //verify the results
-     list_glucose_record_cassandra.foreach {
+    list_glucose_record_cassandra.foreach {
       x =>
+        assert(x.TransmitterId !== null)
+        assert(x.TransmitterId !== "")
+        assert(x.TransmitterId.isInstanceOf[String])
+    }
+
+    list_glucose_record_csv.foreach {
+      x =>
+        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
+        assert(x.TransmitterId === list_glucose_record_cassandra(index).TransmitterId)
+        assert((5 to 6) contains list_glucose_record_cassandra(index).TransmitterId.length)
+    }
+  }
+
+  test("TC_374 : should verify TransmitterTicks of the EGVForPatient in cassandra is populating properly") {
+    //verify the results
+    list_glucose_record_cassandra.foreach {
+      x =>
+        assert(x.TransmitterTicks !== null)
+        assert(x.TransmitterTicks !== "")
+        assert(x.TransmitterTicks.isInstanceOf[Long])
+    }
+    list_glucose_record_csv.foreach {
+      x =>
+        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
+        assert(x.TransmitterId === list_glucose_record_cassandra(index).TransmitterId)
+    }
+  }
+
+  /*test("should test dataType of the column Trend in EGVForPatient in cassandra") {
+    //verify the results
+    list_glucose_record_cassandra.foreach {
+      x =>
+        assert(x.Trend !== null)
         assert(x.Trend.isInstanceOf[String])
+    }
+
+    list_glucose_record_csv.foreach {
+      x =>
+        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
+        assert(x.Trend === list_glucose_record_cassandra(index).Trend)
+    }
+    list_glucose_record_cassandra.foreach {
+      x =>
+
         assert(x.Trend === "None" || x.Trend === "DoubleUp" || x.Trend === "SingleUp" || x.Trend === "FortyFiveUp" || x.Trend === "Flat")
     }
+  }*/
 
-     /*list_glucose_record_csv.foreach {
+  test("TC_362 : should verify TrendRate of the EGVForPatient in cassandra is populating properly") {
+    //verify the results
+    list_glucose_record_cassandra.foreach {
       x =>
-        list_glucose_record_cassandra.foreach {
-          y =>
-            if (x === y) {
-              assert(x.Trend === y.Trend)
-            } else {
-              fail(s"No record found with $x")
-            }
-        }
-    }*/
+        assert(x.TrendRate !== "")
+        assert(x.TrendRate.isInstanceOf[Double])
+    }
+    list_glucose_record_csv.foreach {
+      x =>
+        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
+        assert(x.TrendRate === list_glucose_record_cassandra(index).TrendRate)
+
+        if(list_glucose_record_cassandra(index).TrendRate !== null)
+          assert((-8.0 until 8.0 by 0.1) contains list_glucose_record_cassandra(index).TrendRate)
+        else
+          assert(
+            list_glucose_record_cassandra(index).Value === 0 &&
+            list_glucose_record_cassandra(index).TrendRate === null
+          )
 
     }
-
-  test("should test dataType of the column TrendRate in EGVForPatient in cassandra") {
-
-    //verify the results
-    assert(list_glucose_record_cassandra.head.TrendRate.isInstanceOf[Double])
-    assert((list_glucose_record_cassandra.head.TrendRate >= -8 && list_glucose_record_cassandra.head.TrendRate <= 8) || list_glucose_record_cassandra.head.TrendRate === "")
   }
 
-  test("should test dataType of the column Units in EGVForPatient in cassandra") {
-
+  test("TC_361 : should verify Units of the EGVForPatient in cassandra is populating properly") {
     //verify the results
-    assert(list_glucose_record_cassandra.head.Units.isInstanceOf[String])
-    assert(list_glucose_record_cassandra.head.Units === "mg/dL" || list_glucose_record_cassandra.head.Units === "mmol/L")
-
+    list_glucose_record_cassandra.foreach {
+      x =>
+        assert(x.Units !== null)
+        assert(x.Units !== "")
+        assert(x.Units.isInstanceOf[String])
+    }
+    list_glucose_record_csv.foreach {
+      x =>
+        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
+        assert(x.Units === list_glucose_record_cassandra(index).Units)
+        assert(
+          list_glucose_record_cassandra(index).Units === "mg/dL" ||
+            list_glucose_record_cassandra(index).Units === "mmol/L"
+        )
+    }
   }
 
-  test("should test dataType of the column Value in EGVForPatient in cassandra") {
-
+  test("TC_360 : should verify Value of the EGVForPatient in cassandra is populating properly") {
     //verify the results
-    assert(list_glucose_record_cassandra.head.Value.isInstanceOf[Int])
-    assert(list_glucose_record_cassandra.head.Value >= 0 && list_glucose_record_cassandra.head.Value <= 400)
-
+    list_glucose_record_cassandra.foreach {
+      x =>
+        assert(x.Value !== null)
+        assert(x.Value !== "")
+        assert(x.Value.isInstanceOf[Int])
+    }
+    list_glucose_record_csv.foreach {
+      x =>
+        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
+        assert(x.Value === list_glucose_record_cassandra(index).Value)
+        assert((
+          list_glucose_record_cassandra(index).Value === 0 &&
+            (list_glucose_record_cassandra(index).Status.equalsIgnoreCase("OutOfCalibration") ||
+              list_glucose_record_cassandra(index).Status.equalsIgnoreCase("SensorWarmUp") ||
+              list_glucose_record_cassandra(index).Status.equalsIgnoreCase("SensorNoise")
+              ))||
+            (
+              list_glucose_record_cassandra(index).Value < 40 &&
+                list_glucose_record_cassandra(index).Status.equalsIgnoreCase("Low")
+              ) ||
+            (((40 to 400) contains list_glucose_record_cassandra(index).Value) &&
+                (
+                  list_glucose_record_cassandra(index).Status === null ||
+                    list_glucose_record_cassandra(index).Status === ""
+                  )) ||
+            (
+              list_glucose_record_cassandra(index).Value > 400 &&
+                list_glucose_record_cassandra(index).Status.equalsIgnoreCase("High")
+              ))
+    }
   }
 }

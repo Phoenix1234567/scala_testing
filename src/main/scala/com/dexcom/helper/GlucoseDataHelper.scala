@@ -1,7 +1,5 @@
 package com.dexcom.helper
 
-import java.util.{Date, UUID}
-
 import com.dexcom.{common, dto}
 import com.dexcom.common.{CassandraQueries, Constants}
 import com.dexcom.configuration.DexVictoriaConfigurations
@@ -20,132 +18,53 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
   val logger = LoggerFactory.getLogger("GlucoseHelper")
 
   /**
-    * Fetch glucose data from the Glucose.csv
- *
-    * @return list of Glucose object
+    * this method fetch data from CSV files
+    * @return the list of EGVRecords
     */
-  def GlucoseRecords() : List[GlucoseRecord] = {
-    val list_glucose_record = new ListBuffer[GlucoseRecord]
-
-    val glucose_record_csv = scala.io.Source.fromFile(glucose_record_path)
-    for (line <- glucose_record_csv.getLines().drop(1)) {
-      val cols = line.split(Constants.Splitter).map(_.trim)
-      val glucose_record = GlucoseRecord(
-        RecordedSystemTime =
-          Utils.stringToDate(cols(0)) match {
-            case Right(x) => x
-            case Left(e) => new Date(11111111)
-          },
-        RecordedDisplayTime = Utils.stringToDate(cols(1)) match {
-          case Right(x) => x
-          case Left(e) => new Date(11111111)
-        },
-        TransmitterId = cols(2),
-        TransmitterTime = cols(3).toLong,
-        GlucoseSystemTime = Utils.stringToDate(cols(4)) match {
-          case Right(x) => x
-          case Left(e) => new Date(11111111)
-        },
-        GlucoseDisplayTime = Utils.stringToDate(cols(5)) match {
-          case Right(x) => x
-          case Left(e) => new Date(11111111)
-        },
-        Value = cols(6).toInt,
-        Status = cols(7),
-        TrendArrow = cols(8),
-        TrendRate = cols(9).toDouble,
-        IsBackfilled = cols(10).toBoolean,
-        InternalStatus = cols(11)
-      )
-      list_glucose_record += glucose_record
-    }
-    glucose_record_csv.close()
-
-    list_glucose_record.toList
-  }
-
-
-
-  def test() : List[GlucoseRecord] = {
-    val list_glucose_record = new ListBuffer[GlucoseRecord]
-
-    val glucose_record_csv = scala.io.Source.fromFile(glucose_record_path)
-    for (line <- glucose_record_csv.getLines().drop(1)) {
-      val cols = line.split(Constants.Splitter).map(_.trim)
-      val glucose_record = GlucoseRecord(
-        RecordedSystemTime =
-          Utils.stringToDate(cols(0)) match {
-            case Right(x) => x
-          },
-        RecordedDisplayTime = Utils.stringToDate(cols(1)) match {
-          case Right(x) => x
-        },
-        TransmitterId = cols(2),
-        TransmitterTime = cols(3).toLong,
-        GlucoseSystemTime = Utils.stringToDate(cols(4)) match {
-          case Right(x) => x
-        },
-        GlucoseDisplayTime = Utils.stringToDate(cols(5)) match {
-          case Right(x) => x
-        },
-        Value = cols(6).toInt,
-        Status = cols(7),
-        TrendArrow = cols(8),
-        TrendRate = cols(9).toDouble,
-        IsBackfilled = cols(10).toBoolean,
-        InternalStatus = cols(11)
-      )
-      list_glucose_record += glucose_record
-    }
-    glucose_record_csv.close()
-
-    list_glucose_record.toList
-  }
-
-
-
-  /**
-    * Combining the record of three CSVs Patient.csv, PostIds.csv, Glucose.csv
- *
-    * @return the list of source glucose record data
-    */
-  def EGVForPatient() : List[EGVForPatient]= {
-    val list_glucose_record = this.GlucoseRecords()
-    val list_patient = Utils.patientRecords()
+  def getRecordsFromCSV : List[EGVForPatient] = {
+    val list_glucose_record = new ListBuffer[EGVForPatient]
     val post = Utils.postRecords()
-    val list_egv_for_patient_source_data  = new ListBuffer[EGVForPatient]
-    for(
-      i <- list_patient.indices;
-      j <- list_glucose_record.indices
-    ) {
-      val egv_for_patient_source_data = dto.EGVForPatient (
-        PatientId = list_patient(i).PatientId,
-        SystemTime = list_glucose_record(j).RecordedSystemTime,
-        PostId = post.PostId,
-        DisplayTime = list_glucose_record(j).RecordedDisplayTime,
-        IngestionTimestamp = list_glucose_record(j).RecordedDisplayTime,
-        RateUnits = common.EGVForPatient.RateUnits,
-        Source = list_patient(i).SourceStream,
-        Status = list_glucose_record(j).Status,
-        TransmitterId = list_glucose_record(j).TransmitterId,
-        TransmitterTicks = list_glucose_record(j).TransmitterTime,
-        Trend = list_glucose_record(j).TrendArrow,
-        TrendRate = list_glucose_record(j).TrendRate,
-        Units = common.EGVForPatient.Units,
-        Value = list_glucose_record(j).Value
-      )
-      list_egv_for_patient_source_data += egv_for_patient_source_data
-    }
+    val glucose_record_csv = scala.io.Source.fromFile(glucose_record_path)
 
-    list_egv_for_patient_source_data.toList
+    for (
+      list_patient <- Utils.patientRecords();
+      line <- glucose_record_csv.getLines().drop(1)
+    ) {
+      val cols = line.split(Constants.Splitter).map(_.trim)
+      val glucose_record = dto.EGVForPatient(
+        PatientId = list_patient.PatientId,
+        SystemTime = Utils.stringToDate(cols(0)) match {
+          case Right(x) => x
+        },
+        PostId = post.PostId,
+        DisplayTime = Utils.stringToDate(cols(1)) match {
+          case Right(x) => x
+        },
+        IngestionTimestamp = Utils.stringToDate(cols(1)) match {
+          case Right(x) => x
+        },
+        RateUnits = common.EGVForPatient.RateUnits,
+        Source = list_patient.SourceStream,
+        Status = cols(7),
+        TransmitterId = cols(2),
+        TransmitterTicks = cols(3).toLong,
+        Trend = cols(8),
+        TrendRate = cols(9).toDouble,
+        Units = common.EGVForPatient.Units,
+        Value = cols(6).toInt
+      )
+      list_glucose_record += glucose_record
+    }
+    glucose_record_csv.close()
+
+    list_glucose_record.toList
   }
 
   /**
     * Fetch glucose data from the cassandra table
-    *
     * @return
     */
-  def EGVForPatientBySystemTime() : List[EGVForPatient] = {
+  def getRecordsFromCassandra : List[EGVForPatient] = {
     val list_egv_record = new ListBuffer[EGVForPatient]
     val cassandra_connection = new CassandraConnection
     val session = cassandra_connection.getConnection // get cassandra connection
@@ -172,7 +91,6 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
       )
       list_egv_record += egv_record
     }
-
     cassandra_connection.closeConnection()  //close cassandra connection
     list_egv_record.toList
   }
@@ -191,7 +109,6 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
       val row = resultSet.one()
       val egv_record = dto.EGVForPatient (
         PatientId = row.getUUID("patient_id"),
-
         SystemTime = row.getTimestamp("system_time"),
         PostId = row.getUUID("post_id"),
         DisplayTime = row.getTimestamp("display_time"),
@@ -208,7 +125,6 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
       )
       list_egv_record += egv_record
     }
-
     cassandra_connection.closeConnection()  //close cassandra connection
     list_egv_record.toList
   }
