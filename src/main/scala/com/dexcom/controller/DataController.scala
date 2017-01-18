@@ -8,10 +8,4 @@ import com.dexcom.helper.GlucoseDataHelper
 class DataController(tableName : String, source : String) {
 
 
-  /*def get = {
-    tableName matches {
-      case "Glucose" =>
-        val glucoseHelper = new GlucoseHelper
-    }
-  }*/
 }

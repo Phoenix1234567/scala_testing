@@ -6,7 +6,7 @@ import com.datastax.driver.core.Session
 import com.dexcom.common.{CassandraQueries, Constants}
 import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.connection.CassandraConnection
-import com.dexcom.dto.{EGVForPatient, GlucoseRecord, UserEventRecord, UserEventR}
+import com.dexcom.dto.{EGVForPatient, GlucoseRecord, UserEventRecord}
 import com.dexcom.utils.Utils
 
 import scala.collection.mutable.ListBuffer
@@ -18,12 +18,12 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
 
   // fetch records from cassandra
 
-  def getRecordFromCassandra(): List[UserEventR] = {
-    val list_user_event_record = new ListBuffer[UserEventR]
+  def getRecordFromCassandra(): List[UserEventRecord] = {
+    val list_user_event_record = new ListBuffer[UserEventRecord]
     val resultSet = session.execute(GET_EVENT_FOR_PATIENT_BY_SYSTEM_TIME)
     while(!resultSet.isExhausted) {
       val row = resultSet.one()
-     val user_event_records = new UserEventR()
+     val user_event_records = new UserEventRecord()
       user_event_records.setPatientID(row.getUUID("patient_id"))
       user_event_records.setDisplayTime(row.getTimestamp("display_time"))
       user_event_records.setName(row.getString("name"))
@@ -44,17 +44,17 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
 
   //fetch record from CSV
 
-  def getRecordsFromCSV() : List[UserEventR] = {
-    val list_user_event_records = new ListBuffer[UserEventR]
+  def getRecordsFromCSV() : List[UserEventRecord] = {
+    val list_user_event_records = new ListBuffer[UserEventRecord]
 
     val user_event_record_csv = scala.io.Source.fromFile(user_event_path)
     val post = Utils.postRecords()
 
     for (patient<-Utils.patientRecords();line <- user_event_record_csv.getLines().drop(1)) {
       val cols = line.split(Constants.Splitter).map(_.trim)
-      val event_record = new UserEventR()
+      val event_record = new UserEventRecord()
         event_record.setPatientID(patient.PatientId)
-        event_record.setDisplayTime( Utils.stringToDate(cols(1)) match {
+        event_record.setDisplayTime( Utils.stringToDate(cols(3)) match {
           case Right(x) => x
           case Left(e) => new Date(11111111)
         })
@@ -71,8 +71,8 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
         case Right(x) => x
         case Left(e) => new Date(11111111)
       })
-      event_record.setUnits(cols(6))
-      event_record.setValue(cols(7))
+      event_record.setUnits(cols(7))
+      event_record.setValue(cols(6))
       list_user_event_records += event_record
     }
     user_event_record_csv.close()

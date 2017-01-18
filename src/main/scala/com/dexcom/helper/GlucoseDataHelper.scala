@@ -19,8 +19,6 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
 
   val logger = LoggerFactory.getLogger("GlucoseHelper")
 
-
-
   /**
     * Fetch glucose data from the Glucose.csv
  *
@@ -103,8 +101,6 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
 
     list_glucose_record.toList
   }
-
-
 
 
 
