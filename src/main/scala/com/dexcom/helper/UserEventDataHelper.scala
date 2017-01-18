@@ -6,7 +6,7 @@ import com.datastax.driver.core.Session
 import com.dexcom.common.{CassandraQueries, Constants}
 import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.connection.CassandraConnection
-import com.dexcom.dto.{EGVForPatient, GlucoseRecord, UserEventRecord}
+import com.dexcom.dto.{EGVForPatient, UserEventRecord}
 import com.dexcom.utils.Utils
 
 import scala.collection.mutable.ListBuffer
