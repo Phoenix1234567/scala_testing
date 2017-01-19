@@ -3,19 +3,19 @@ package com.dexcom.utils
 import java.text.ParseException
 import java.util.{Date, UUID}
 
-import com.dexcom.common.{CassandraQueries, Constants}
+import com.dexcom.common.Constants
 import com.dexcom.dto.{Patient, Post}
 import org.joda.time.format.DateTimeFormat
 import com.dexcom.configuration.DexVictoriaConfigurations
 
+import scala.collection.immutable.NumericRange
 import scala.collection.mutable.ListBuffer
 
 /**
   * Created by sarvaraj on 13/01/17.
   */
-object Utils extends DexVictoriaConfigurations   {
+object Utils extends DexVictoriaConfigurations {
 
-  //TODO
   def stringToDate(dateString : String) : Either[Unit, Date]= {
 
     val df = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZ")
@@ -30,7 +30,14 @@ object Utils extends DexVictoriaConfigurations   {
     }
   }
 
+  def doubleFormatting(x : NumericRange[Double]): List[Double] = {
+    var list = new ListBuffer[Double]
+    x.foreach {
+      list += new java.math.BigDecimal(_).setScale(1, BigDecimal.RoundingMode.HALF_UP).toDouble
+    }
+    list.toList
 
+  }
   /**
     * Fetch patientid, source, etc from Patient.csv file
     *
@@ -62,11 +69,11 @@ object Utils extends DexVictoriaConfigurations   {
     * @return list of post object
     */
   def postRecords() : Post = {
-    var post_record : Post= null
+    var post_record: Post = null
     val post_record_csv = scala.io.Source.fromFile(post_path)
-    for(line <- post_record_csv.getLines().drop(1)) {
+    for (line <- post_record_csv.getLines().drop(1)) {
       val cols = line.split(Constants.Splitter).map(_.trim)
-      post_record = Post (
+      post_record = Post(
         PostId = UUID.fromString(cols(0)),
         PostedTimestamp = cols(1)
       )
@@ -75,6 +82,4 @@ object Utils extends DexVictoriaConfigurations   {
     post_record_csv.close()
     post_record
   }
-
-
 }

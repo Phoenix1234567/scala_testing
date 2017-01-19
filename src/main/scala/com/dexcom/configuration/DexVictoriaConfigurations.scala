@@ -50,4 +50,7 @@ trait DexVictoriaConfigurations {
 
   //read trueStore password
   lazy val trueStorePassword = conf.getString("cassandra.trueStorePassword")
+
+  //read keySpaceName
+  lazy val keySpaceName = conf.getString("cassandra.keySpaceName")
 }

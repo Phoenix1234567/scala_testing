@@ -4,6 +4,7 @@ import java.util
 import java.util.{Date, UUID}
 
 import com.dexcom.helper.GlucoseDataHelper
+import com.dexcom.utils.Utils._
 import org.scalatest.FunSuite
 
 /**
@@ -82,7 +83,7 @@ class EGVForPatientBySystemTime extends FunSuite {
         assert(x.TrendRate === list_glucose_record_cassandra(index).TrendRate)
 
         if(list_glucose_record_cassandra(index).TrendRate !== null)
-          assert((-8.0 to 8.0 by 0.1) contains list_glucose_record_cassandra(index).TrendRate) //TODO
+          assert(doubleFormatting(-8.0 to 8.0 by 0.1) contains list_glucose_record_cassandra(index).TrendRate)
         else
           assert(
             list_glucose_record_cassandra(index).Value === 0 &&
@@ -95,13 +96,13 @@ class EGVForPatientBySystemTime extends FunSuite {
 
     //initiate
     val trendAndTrendRateMapping = new util.HashMap[String, List[Double]]
-    trendAndTrendRateMapping.put("DoubleUp", (3.1 to 8.0 by 0.1).toList)
-    trendAndTrendRateMapping.put("SingleUp", (2.0 until 3.0 by 0.1).toList)
-    trendAndTrendRateMapping.put("FortyFiveUp", (1.0 until 2.0 by 0.1).toList)
-    trendAndTrendRateMapping.put("Flat", (-1.1 until 1.0 by 0.1).toList)
-    trendAndTrendRateMapping.put("FortyFiveDown", (-2.1 to -1.0 by 0.1).toList)
-    trendAndTrendRateMapping.put("SingleDown", (-3.1 to -2.0 by 0.1).toList)
-    trendAndTrendRateMapping.put("DoubleDown", (-3.0 to -8.0 by 0.1).toList)
+    trendAndTrendRateMapping.put("doubleup", doubleFormatting(3.0 to 8.0 by 0.1))
+    trendAndTrendRateMapping.put("singleup", doubleFormatting(2.0 until 3.0 by 0.1))
+    trendAndTrendRateMapping.put("fortyfiveup", doubleFormatting(1.0 until 2.0 by 0.1))
+    trendAndTrendRateMapping.put("flat", doubleFormatting(-1.1 until 1.0 by 0.1))
+    trendAndTrendRateMapping.put("fortyfivedown", doubleFormatting(-2.1 to -1.0 by 0.1))
+    trendAndTrendRateMapping.put("singledown", doubleFormatting(-3.1 to -2.0 by 0.1))
+    trendAndTrendRateMapping.put("doubledown", doubleFormatting(-8.0 to -3.0 by 0.1))
 
     //verify the results
     list_glucose_record_cassandra.foreach {
@@ -117,11 +118,11 @@ class EGVForPatientBySystemTime extends FunSuite {
 
         if(list_glucose_record_cassandra(index).TrendRate === "")
           assert(list_glucose_record_cassandra(index).Trend === None)
-        else if (!(-8.0 to 8.0 by 0.1).contains(list_glucose_record_cassandra(index).TrendRate))  //TODO
+        else if (!(doubleFormatting(-8.0 to 8.0 by 0.1) contains list_glucose_record_cassandra(index).TrendRate))
           assert(list_glucose_record_cassandra(index).Trend.equalsIgnoreCase("NotComputable"))
         else
           assert(
-            trendAndTrendRateMapping.get(list_glucose_record_cassandra(index).Trend)
+            trendAndTrendRateMapping.get(list_glucose_record_cassandra(index).Trend.toLowerCase)
               .contains(list_glucose_record_cassandra(index).TrendRate)
           )
     }
