@@ -82,13 +82,12 @@ class EGVForPatientBySystemTime extends FunSuite {
         assert(x.TrendRate === list_glucose_record_cassandra(index).TrendRate)
 
         if(list_glucose_record_cassandra(index).TrendRate !== null)
-          assert((-8.0 to 8.0 by 0.1) contains list_glucose_record_cassandra(index).TrendRate)
+          assert((-8.0 to 8.0 by 0.1) contains list_glucose_record_cassandra(index).TrendRate) //TODO
         else
           assert(
             list_glucose_record_cassandra(index).Value === 0 &&
               list_glucose_record_cassandra(index).TrendRate === null
           )
-
     }
   }
 
@@ -115,11 +114,10 @@ class EGVForPatientBySystemTime extends FunSuite {
       x =>
         val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
         assert(x.Trend === list_glucose_record_cassandra(index).Trend)
-        //val y : Double = -8.0 to 8.0 by 0.1
-        println(-8.0 to 8.0 by 0.1)
+
         if(list_glucose_record_cassandra(index).TrendRate === "")
           assert(list_glucose_record_cassandra(index).Trend === None)
-        else if (!((-8.0 to 8.0 by 0.1) contains list_glucose_record_cassandra(index).TrendRate))
+        else if (!(-8.0 to 8.0 by 0.1).contains(list_glucose_record_cassandra(index).TrendRate))  //TODO
           assert(list_glucose_record_cassandra(index).Trend.equalsIgnoreCase("NotComputable"))
         else
           assert(
@@ -269,7 +267,6 @@ class EGVForPatientBySystemTime extends FunSuite {
         val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
         assert(x.DisplayTime === list_glucose_record_cassandra(index).IngestionTimestamp)
     }
-
   }
 
   test("TC_384 --~> should verify RateUnits of the EGVForPatient in cassandra is populating properly") {

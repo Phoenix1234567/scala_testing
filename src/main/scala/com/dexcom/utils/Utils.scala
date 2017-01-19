@@ -15,6 +15,7 @@ import scala.collection.mutable.ListBuffer
   */
 object Utils extends DexVictoriaConfigurations   {
 
+  //TODO
   def stringToDate(dateString : String) : Either[Unit, Date]= {
 
     val df = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZ")
