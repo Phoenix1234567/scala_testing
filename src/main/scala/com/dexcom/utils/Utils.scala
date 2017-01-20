@@ -30,6 +30,11 @@ object Utils extends DexVictoriaConfigurations {
     }
   }
 
+  /**
+    * this method used to format the double upto one decimal place
+    * @param x is the numeric range of doubles to be formatted
+    * @return the list of doubles formattted upto one decimal place
+    */
   def doubleFormatting(x : NumericRange[Double]): List[Double] = {
     var list = new ListBuffer[Double]
     x.foreach {

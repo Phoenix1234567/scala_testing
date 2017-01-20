@@ -10,7 +10,6 @@ object Constants {
   val DeviceUploadForPatient = "DeviceUploadForPatient"
   val Meter = "Meter"
   val UserEvent = "UserEvent"
-
 }
 
 object EGVForPatient {

@@ -1,7 +1,7 @@
 package com.dexcom.testCase
 
 import java.util
-import java.util.{Date, UUID}
+import java.util.{Date,UUID}
 
 import com.dexcom.helper.GlucoseDataHelper
 import com.dexcom.utils.Utils._
@@ -14,10 +14,10 @@ class EGVForPatientBySystemTime extends FunSuite {
 
   //initiate
   val glucoseRecordTestCase = new GlucoseDataHelper
-  val list_glucose_record_cassandra = glucoseRecordTestCase.getRecordsFromCassandra
-  val list_glucose_record_csv = glucoseRecordTestCase.getRecordsFromCSV
+  val list_glucose_record_cassandra = glucoseRecordTestCase.getEGVForPatientBySystemTimeRecordsFromCassandra
+  val list_glucose_record_csv = glucoseRecordTestCase.getGlucoseRecordsFromCSV
 
-  test("TC_360 --~> should verify Value of the EGVForPatient in cassandra is populating properly") {
+  test("TC_360 --~> should verify Value of the EGVForPatientBySystemTime in cassandra is populating properly") {
     //verify the results
     list_glucose_record_cassandra.foreach {
       x =>
@@ -27,31 +27,35 @@ class EGVForPatientBySystemTime extends FunSuite {
     }
     list_glucose_record_csv.foreach {
       x =>
-        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-        assert(x.Value === list_glucose_record_cassandra(index).Value)
-        assert((
-          list_glucose_record_cassandra(index).Value === 0 &&
-            (list_glucose_record_cassandra(index).Status.equalsIgnoreCase("OutOfCalibration") ||
-              list_glucose_record_cassandra(index).Status.equalsIgnoreCase("SensorWarmUp") ||
-              list_glucose_record_cassandra(index).Status.equalsIgnoreCase("SensorNoise")
-              ))||
-          (
-            list_glucose_record_cassandra(index).Value < 40 &&
-              list_glucose_record_cassandra(index).Status.equalsIgnoreCase("Low")
-            ) ||
-          (((40 to 400) contains list_glucose_record_cassandra(index).Value) &&
+        val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
+        if(index != -1) {
+          assert(x.Value === list_glucose_record_cassandra(index).Value)
+          assert((
+            list_glucose_record_cassandra(index).Value === 0 &&
+              (list_glucose_record_cassandra(index).Status.equalsIgnoreCase("OutOfCalibration") ||
+                list_glucose_record_cassandra(index).Status.equalsIgnoreCase("SensorWarmUp") ||
+                list_glucose_record_cassandra(index).Status.equalsIgnoreCase("SensorNoise")
+                )) ||
             (
-              list_glucose_record_cassandra(index).Status === null ||
-                list_glucose_record_cassandra(index).Status === ""
-              )) ||
-          (
-            list_glucose_record_cassandra(index).Value > 400 &&
-              list_glucose_record_cassandra(index).Status.equalsIgnoreCase("High")
-            ))
+              list_glucose_record_cassandra(index).Value < 40 &&
+                list_glucose_record_cassandra(index).Status.equalsIgnoreCase("Low")
+              ) ||
+            (((40 to 400) contains list_glucose_record_cassandra(index).Value) &&
+              (
+                list_glucose_record_cassandra(index).Status === null ||
+                  list_glucose_record_cassandra(index).Status === ""
+                )) ||
+            (
+              list_glucose_record_cassandra(index).Value > 400 &&
+                list_glucose_record_cassandra(index).Status.equalsIgnoreCase("High")
+              ))
+        } else {
+          fail(s"Record not found : $x")
+        }
     }
   }
 
-  test("TC_361 --~> should verify Units of the EGVForPatient in cassandra is populating properly") {
+  test("TC_361 --~> should verify Units of the EGVForPatientBySystemTime in cassandra is populating properly") {
     //verify the results
     list_glucose_record_cassandra.foreach {
       x =>
@@ -61,16 +65,20 @@ class EGVForPatientBySystemTime extends FunSuite {
     }
     list_glucose_record_csv.foreach {
       x =>
-        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-        assert(x.Units === list_glucose_record_cassandra(index).Units)
-        assert(
-          list_glucose_record_cassandra(index).Units === "mg/dL" ||
-            list_glucose_record_cassandra(index).Units === "mmol/L"
-        )
+        val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
+        if(index != -1) {
+          assert(x.Units === list_glucose_record_cassandra(index).Units)
+          assert(
+            list_glucose_record_cassandra(index).Units === "mg/dL" ||
+              list_glucose_record_cassandra(index).Units === "mmol/L"
+          )
+        } else{
+          fail(s"Record not found : $x")
+        }
     }
   }
 
-  test("TC_362 --~> should verify TrendRate of the EGVForPatient in cassandra is populating properly") {
+  test("TC_362 --~> should verify TrendRate of the EGVForPatientBySystemTime in cassandra is populating properly") {
     //verify the results
     list_glucose_record_cassandra.foreach {
       x =>
@@ -79,20 +87,24 @@ class EGVForPatientBySystemTime extends FunSuite {
     }
     list_glucose_record_csv.foreach {
       x =>
-        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-        assert(x.TrendRate === list_glucose_record_cassandra(index).TrendRate)
+        val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
+        if(index != -1) {
+          assert(x.TrendRate === list_glucose_record_cassandra(index).TrendRate)
 
-        if(list_glucose_record_cassandra(index).TrendRate !== null)
-          assert(doubleFormatting(-8.0 to 8.0 by 0.1) contains list_glucose_record_cassandra(index).TrendRate)
-        else
-          assert(
-            list_glucose_record_cassandra(index).Value === 0 &&
-              list_glucose_record_cassandra(index).TrendRate === null
-          )
+          if (list_glucose_record_cassandra(index).TrendRate !== null)
+            assert(doubleFormatting(-8.0 to 8.0 by 0.1) contains list_glucose_record_cassandra(index).TrendRate)
+          else
+            assert(
+              list_glucose_record_cassandra(index).Value === 0 &&
+                list_glucose_record_cassandra(index).TrendRate === null
+            )
+        } else{
+          fail(s"Record not found : $x")
+        }
     }
   }
 
-  test("TC_363 --~> should verify Trend of the EGVForPatient in cassandra is populating properly") {
+  test("TC_363 --~> should verify Trend of the EGVForPatientBySystemTime in cassandra is populating properly") {
 
     //initiate
     val trendAndTrendRateMapping = new util.HashMap[String, List[Double]]
@@ -113,22 +125,26 @@ class EGVForPatientBySystemTime extends FunSuite {
 
     list_glucose_record_csv.foreach {
       x =>
-        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-        assert(x.Trend === list_glucose_record_cassandra(index).Trend)
+        val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
+        if(index != -1) {
+          assert(x.Trend === list_glucose_record_cassandra(index).Trend)
 
-        if(list_glucose_record_cassandra(index).TrendRate === "")
-          assert(list_glucose_record_cassandra(index).Trend === None)
-        else if (!(doubleFormatting(-8.0 to 8.0 by 0.1) contains list_glucose_record_cassandra(index).TrendRate))
-          assert(list_glucose_record_cassandra(index).Trend.equalsIgnoreCase("NotComputable"))
-        else
-          assert(
-            trendAndTrendRateMapping.get(list_glucose_record_cassandra(index).Trend.toLowerCase)
-              .contains(list_glucose_record_cassandra(index).TrendRate)
-          )
+          if (list_glucose_record_cassandra(index).TrendRate === "")
+            assert(list_glucose_record_cassandra(index).Trend === None)
+          else if (!(doubleFormatting(-8.0 to 8.0 by 0.1) contains list_glucose_record_cassandra(index).TrendRate))
+            assert(list_glucose_record_cassandra(index).Trend.equalsIgnoreCase("NotComputable"))
+          else
+            assert(
+              trendAndTrendRateMapping.get(list_glucose_record_cassandra(index).Trend.toLowerCase)
+                .contains(list_glucose_record_cassandra(index).TrendRate)
+            )
+        }else{
+          fail(s"Record not found : $x")
+        }
     }
   }
 
-  test("TC_374 --~> should verify TransmitterTicks of the EGVForPatient in cassandra is populating properly") {
+  test("TC_374 --~> should verify TransmitterTicks of the EGVForPatientBySystemTime in cassandra is populating properly") {
     //verify the results
     list_glucose_record_cassandra.foreach {
       x =>
@@ -138,12 +154,16 @@ class EGVForPatientBySystemTime extends FunSuite {
     }
     list_glucose_record_csv.foreach {
       x =>
-        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-        assert(x.TransmitterId === list_glucose_record_cassandra(index).TransmitterId)
+        val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
+        if(index != -1) {
+          assert(x.TransmitterId === list_glucose_record_cassandra(index).TransmitterId)
+        } else{
+          fail(s"Record not found : $x")
+        }
     }
   }
 
-  test("TC_375 --~> should verify TransmitterId of the EGVForPatient in cassandra is populating properly") {
+  test("TC_375 --~> should verify TransmitterId of the EGVForPatientBySystemTime in cassandra is populating properly") {
     //verify the results
     list_glucose_record_cassandra.foreach {
       x =>
@@ -154,13 +174,17 @@ class EGVForPatientBySystemTime extends FunSuite {
 
     list_glucose_record_csv.foreach {
       x =>
-        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-        assert(x.TransmitterId === list_glucose_record_cassandra(index).TransmitterId)
-        assert((5 to 6) contains list_glucose_record_cassandra(index).TransmitterId.length)
+        val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
+        if(index != -1) {
+          assert(x.TransmitterId === list_glucose_record_cassandra(index).TransmitterId)
+          assert((5 to 6) contains list_glucose_record_cassandra(index).TransmitterId.length)
+        } else {
+          fail(s"Record not found : $x")
+        }
     }
   }
 
-  test("TC_376 --~> should verify DisplayTime of the EGVForPatient in cassandra is populating properly") {
+  test("TC_376 --~> should verify DisplayTime of the EGVForPatientBySystemTime in cassandra is populating properly") {
 
     //verify the results
     list_glucose_record_cassandra.foreach {
@@ -173,12 +197,16 @@ class EGVForPatientBySystemTime extends FunSuite {
 
     list_glucose_record_csv.foreach {
       x =>
-        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-        assert(x.DisplayTime === list_glucose_record_cassandra(index).DisplayTime)
+        val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
+        if(index != -1) {
+          assert(x.DisplayTime === list_glucose_record_cassandra(index).DisplayTime)
+        } else {
+          fail(s"Record not found : $x")
+        }
     }
   }
 
-  test("TC_377 --~> should verify Status of the EGVForPatient in cassandra is populating properly") {
+  test("TC_377 --~> should verify Status of the EGVForPatientBySystemTime in cassandra is populating properly") {
 
     //verify the results
     list_glucose_record_cassandra.foreach {
@@ -187,22 +215,26 @@ class EGVForPatientBySystemTime extends FunSuite {
           assert(x.Status.isInstanceOf[String])
         }
 
-        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-        assert(x.Status === list_glucose_record_cassandra(index).Status)
+        val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
+        if(index != -1) {
+          assert(x.Status === list_glucose_record_cassandra(index).Status)
 
-        assert(
-          list_glucose_record_cassandra(index).Status === "High" ||
-            list_glucose_record_cassandra(index).Status === "Low" ||
-            list_glucose_record_cassandra(index).Status === "OutOfCalibration" ||
-            list_glucose_record_cassandra(index).Status === "SensorWarmUp" ||
-            list_glucose_record_cassandra(index).Status === "SensorNoise" ||
-            list_glucose_record_cassandra(index).Status === "" ||
-            list_glucose_record_cassandra(index).Status === null
-        )
+          assert(
+            list_glucose_record_cassandra(index).Status === "High" ||
+              list_glucose_record_cassandra(index).Status === "Low" ||
+              list_glucose_record_cassandra(index).Status === "OutOfCalibration" ||
+              list_glucose_record_cassandra(index).Status === "SensorWarmUp" ||
+              list_glucose_record_cassandra(index).Status === "SensorNoise" ||
+              list_glucose_record_cassandra(index).Status === "" ||
+              list_glucose_record_cassandra(index).Status === null
+          )
+        } else{
+          fail(s"Record not found : $x")
+        }
     }
   }
 
-  test("TC_378 --~> should verify PatientId of the EGVForPatient in cassandra is populating properly") {
+  test("TC_378 --~> should verify PatientId of the EGVForPatientBySystemTime in cassandra is populating properly") {
 
     //verify the results
     list_glucose_record_cassandra.foreach {
@@ -214,12 +246,16 @@ class EGVForPatientBySystemTime extends FunSuite {
 
     list_glucose_record_csv.foreach {
       x =>
-        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-        assert(x.PatientId === list_glucose_record_cassandra(index).PatientId)
+        val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
+        if(index != -1) {
+          assert(x.PatientId === list_glucose_record_cassandra(index).PatientId)
+        } else{
+          fail(s"Record not found : $x")
+        }
     }
   }
 
-  test("TC_381 --~> should verify SystemTime of the EGVForPatient in cassandra is populating properly") {
+  test("TC_381 --~> should verify SystemTime of the EGVForPatientBySystemTime in cassandra is populating properly") {
 
     //verify the results
     list_glucose_record_cassandra.foreach {
@@ -231,12 +267,16 @@ class EGVForPatientBySystemTime extends FunSuite {
 
     list_glucose_record_csv.foreach {
       x =>
-        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-        assert(x.SystemTime === list_glucose_record_cassandra(index).SystemTime)
+        val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
+        if(index != -1) {
+          assert(x.SystemTime === list_glucose_record_cassandra(index).SystemTime)
+        } else {
+          fail(s"Record not found : $x")
+        }
     }
   }
 
-  test("TC_382 --~> should verify PostId of the EGVForPatient in cassandra is populating properly") {
+  test("TC_382 --~> should verify PostId of the EGVForPatientBySystemTime in cassandra is populating properly") {
 
     //verify the results
     list_glucose_record_cassandra.foreach {
@@ -248,12 +288,16 @@ class EGVForPatientBySystemTime extends FunSuite {
 
     list_glucose_record_csv.foreach {
       x =>
-        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-        assert(x.PostId === list_glucose_record_cassandra(index).PostId)
+        val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
+        if(index != -1) {
+          assert(x.PostId === list_glucose_record_cassandra(index).PostId)
+        } else {
+          fail(s"Record not found : $x")
+        }
     }
   }
 
-  test("TC_383 --~> should verify IngestionTimestamp of the EGVForPatient in cassandra is populating properly") {
+  test("TC_383 --~> should verify IngestionTimestamp of the EGVForPatientBySystemTime in cassandra is populating properly") {
 
     //verify the results
     list_glucose_record_cassandra.foreach {
@@ -265,12 +309,16 @@ class EGVForPatientBySystemTime extends FunSuite {
 
     list_glucose_record_csv.foreach {
       x =>
-        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-        assert(x.DisplayTime === list_glucose_record_cassandra(index).IngestionTimestamp)
+        val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
+        if(index != -1) {
+          assert(x.DisplayTime === list_glucose_record_cassandra(index).IngestionTimestamp)
+        } else{
+          fail(s"Record not found : $x")
+        }
     }
   }
 
-  test("TC_384 --~> should verify RateUnits of the EGVForPatient in cassandra is populating properly") {
+  test("TC_384 --~> should verify RateUnits of the EGVForPatientBySystemTime in cassandra is populating properly") {
 
     //verify the results
     list_glucose_record_cassandra.foreach {
@@ -282,16 +330,20 @@ class EGVForPatientBySystemTime extends FunSuite {
 
     list_glucose_record_csv.foreach {
       x =>
-        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-        assert(x.RateUnits === list_glucose_record_cassandra(index).RateUnits)
-        assert(
-          list_glucose_record_cassandra(index).RateUnits === "mg/dL/min" ||
-            list_glucose_record_cassandra(index).RateUnits === "mmol/L/min"
-        )
+        val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
+        if(index != -1) {
+          assert(x.RateUnits === list_glucose_record_cassandra(index).RateUnits)
+          assert(
+            list_glucose_record_cassandra(index).RateUnits === "mg/dL/min" ||
+              list_glucose_record_cassandra(index).RateUnits === "mmol/L/min"
+          )
+        } else {
+          fail(s"Record not found : $x")
+        }
     }
   }
 
-  test("TC_385 --~> should verify Source of the EGVForPatient in cassandra is populating properly") {
+  test("TC_385 --~> should verify Source of the EGVForPatientBySystemTime in cassandra is populating properly") {
 
     //verify the results
     list_glucose_record_cassandra.foreach {
@@ -303,12 +355,16 @@ class EGVForPatientBySystemTime extends FunSuite {
 
     list_glucose_record_csv.foreach {
       x =>
-        val index = glucoseRecordTestCase.getIndex(x, list_glucose_record_cassandra)
-        assert(x.Source === list_glucose_record_cassandra(index).Source)
-        assert(
-          list_glucose_record_cassandra(index).Source === "Receiver" ||
-            list_glucose_record_cassandra(index).Source === "Phone"
-        )
+        val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
+        if(index != -1) {
+          assert(x.Source === list_glucose_record_cassandra(index).Source)
+          assert(
+            list_glucose_record_cassandra(index).Source === "Receiver" ||
+              list_glucose_record_cassandra(index).Source === "Phone"
+          )
+        } else {
+          fail(s"Record not found : $x")
+        }
     }
   }
 }
