@@ -17,7 +17,7 @@ class CalibrationDataHelper extends DexVictoriaConfigurations with CassandraQuer
 
   // fetch records from CSV MeterRecord
 
-  def getRecordsFromCSV: List[MeterRecord] = {
+  def getMeterRecordsFromCSV: List[MeterRecord] = {
     val list_meter_record = new ListBuffer[MeterRecord]
     val post = Utils.postRecords()
     val meter_record_csv = scala.io.Source.fromFile(meter_record_path)
@@ -37,7 +37,10 @@ class CalibrationDataHelper extends DexVictoriaConfigurations with CassandraQuer
           case Right(x) => x
         },
         TransmitterId = cols(2),
-        TransmitterTime = cols(3).toInt,
+        IngestionTimestamp = Utils.stringToDate(cols(0)) match {
+          case Right(x) => x
+        },
+
         Units = common.MeterRecord.Units,
         Value = cols(6).toInt,
         EntryType = cols(7),
@@ -52,7 +55,7 @@ class CalibrationDataHelper extends DexVictoriaConfigurations with CassandraQuer
 /*
 * Fetch records from cassandra for CalibrationForPatientBySystemTime
 * */
-  def getRecordsFromCassandra : List[MeterRecord] = {
+  def getCalibrationForPatientBySystemTimeRecordsFromCassandra : List[MeterRecord] = {
     val list_calibration_record = new ListBuffer[MeterRecord]
     val cassandra_connection = new CassandraConnection
     val session = cassandra_connection.getConnection // get cassandra connection
@@ -67,7 +70,7 @@ class CalibrationDataHelper extends DexVictoriaConfigurations with CassandraQuer
         //PostId = row.getUUID("post_id"),
         DisplayTime = row.getTimestamp("display_time"),
         TransmitterId = row.getString("transmitter_id"),
-        TransmitterTime = row.getInt("transmitter_ticks"),
+        IngestionTimestamp = row.getTimestamp("ingestion_timestamp"),
         Units = row.getString("units"),
         Value = row.getInt("value"),
         EntryType = row.getString("entry_type"),
@@ -79,7 +82,7 @@ class CalibrationDataHelper extends DexVictoriaConfigurations with CassandraQuer
     list_calibration_record.toList
   }
 
-  def getIndex(sourceData : MeterRecord, destinationDataList : List[MeterRecord]) : Int = {
+  def getIndexForSystemTime(sourceData : MeterRecord, destinationDataList : List[MeterRecord]) : Int = {
 
     val index = destinationDataList.indexWhere {
       y =>
@@ -95,7 +98,7 @@ class CalibrationDataHelper extends DexVictoriaConfigurations with CassandraQuer
     * this method fetches cassandra data from table CalibrationForPatientByDisplayTime
     * @return the list of records
     */
-  /*def CalibrationForPatientByDisplayTime() : List[MeterRecord] = {
+  /*def getEGVForPatientByDisplayTimeRecordsFromCassandra() : List[MeterRecord] = {
     val list_calibration_record = new ListBuffer[MeterRecord]
     val cassandra_connection = new CassandraConnection
     val session = cassandra_connection.getConnection // get cassandra connection

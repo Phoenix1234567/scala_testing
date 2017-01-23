@@ -16,3 +16,8 @@ object EGVForPatient {
   val RateUnits = "mg/dL/min"
   val Units = "mg/dL"
 }
+
+object MeterRecord {
+  val Units = "mg/dL"
+  val Model = "G5"
+}
