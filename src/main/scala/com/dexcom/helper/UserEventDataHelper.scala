@@ -31,7 +31,7 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
       user_event_records.setIngestionTimestamp(row.getTimestamp("ingestion_timestamp"))
       user_event_records.setPostID(row.getUUID("post_id"))
       user_event_records.setSubType(row.getString("subtype"))
-      user_event_records.setSystemTimes(row.getTimestamp("system_time"))
+      user_event_records.setSystemTime(row.getTimestamp("system_time"))
       user_event_records.setUnits(row.getString("unit"))
       user_event_records.setValue(row.getString("value"))
 
@@ -67,7 +67,7 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
 
       event_record.setPostID(post.PostId)
       event_record.setSubType(cols(5))
-      event_record.setSystemTimes(Utils.stringToDate(cols(2)) match {
+      event_record.setSystemTime(Utils.stringToDate(cols(2)) match {
         case Right(x) => x
         case Left(e) => new Date(11111111)
       })

@@ -12,7 +12,7 @@ import org.scalatest.{BeforeAndAfterAll, FunSuite}
 /**
   * Created by sarvaraj on 17/01/17.
   */
-class EventForPatientBySystemTime extends FunSuite with CassandraQueries with BeforeAndAfterAll {
+class EventForPatientByDisplayTime extends FunSuite with CassandraQueries with BeforeAndAfterAll {
   var recordsFromCassandra: List[UserEventRecord] = null
   var recordsFromCSV: List[UserEventRecord] = null
   var cassandraConnection: CassandraConnection = null
@@ -38,7 +38,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
   }
 
 
-  test("TC_386 --~> should verify PatientId of the EventForPatientBySystemTime in cassandra is populating properly") {
+  test("TC_392 --~> should verify PatientId of the EventForPatientByDisplayTime in cassandra is populating properly") {
 
     //verify the results
     recordsFromCassandra.foreach {
@@ -53,7 +53,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
         val index = recordsFromCassandra.indexWhere {
           y =>
             y.PatientID.equals(x.PatientID) &&
-              y.SystemTime.equals(x.SystemTime) &&
+              y.DisplayTime.equals(x.DisplayTime) &&
               y.PostID.equals(x.PostID) &&
               y.Model.equals(x.Model)
         }
@@ -62,7 +62,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
   }
 
 
-  test("TC_343 --~> should verify Name of the EventForPatientBySystemTime in cassandra is populating properly") {
+  test("TC_337 --~> should verify Name of the EventForPatientByDisplayTime in cassandra is populating properly") {
 
     //verify the results
     recordsFromCassandra.foreach {
@@ -77,7 +77,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
         val index = recordsFromCassandra.indexWhere {
           y =>
             y.PatientID.equals(x.PatientID) &&
-              y.SystemTime.equals(x.SystemTime) &&
+              y.DisplayTime.equals(x.DisplayTime) &&
               y.Name.equals(x.Name) &&
               y.Model.equals(x.Model)
         }
@@ -85,7 +85,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
     }
   }
 
-  test("TC_344 --~> should verify SubType of the EventForPatientBySystemTime in cassandra is populating properly") {
+  test("TC_338 --~> should verify SubType of the EventForPatientByDisplayTime in cassandra is populating properly") {
 
     //verify the results
     recordsFromCassandra.foreach {
@@ -99,7 +99,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
         val index = recordsFromCassandra.indexWhere {
           y =>
             y.PatientID.equals(x.PatientID) &&
-              y.SystemTime.equals(x.SystemTime) &&
+              y.DisplayTime.equals(x.DisplayTime) &&
               y.Name.equals(x.Name) &&
               y.Model.equals(x.Model)
         }
@@ -107,7 +107,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
     }
   }
 
-  test("TC_345 --~> should verify Value of the EventForPatientBySystemTime in cassandra is populating properly") {
+  test("TC_339 --~> should verify Value of the EventForPatientByDisplayTime in cassandra is populating properly") {
 
     //verify the results
     recordsFromCassandra.foreach {
@@ -121,7 +121,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
         val index = recordsFromCassandra.indexWhere {
           y =>
             y.PatientID.equals(x.PatientID) &&
-              y.SystemTime.equals(x.SystemTime) &&
+              y.DisplayTime.equals(x.DisplayTime) &&
               y.Name.equals(x.Name) &&
               y.Model.equals(x.Model)
         }
@@ -134,7 +134,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
     }
   }
 
-  test("TC_346 --~> should verify Unit of the EventForPatientBySystemTime in cassandra is populating properly") {
+  test("TC_340 --~> should verify Unit of the EventForPatientByDisplayTime in cassandra is populating properly") {
 
     //verify the results
     recordsFromCassandra.foreach {
@@ -148,7 +148,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
         val index = recordsFromCassandra.indexWhere {
           y =>
             y.PatientID.equals(x.PatientID) &&
-              y.SystemTime.equals(x.SystemTime) &&
+              y.DisplayTime.equals(x.DisplayTime) &&
               y.Name.equals(x.Name) &&
               y.Model.equals(x.Model)
         }
@@ -164,7 +164,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
     }
   }
 
-  test("TC_348 --~> should verify Model of the EventForPatientBySystemTime in cassandra is populating properly") {
+  test("TC_342 --~> should verify Model of the EventForPatientByDisplayTime in cassandra is populating properly") {
 
     //verify the results
     recordsFromCassandra.foreach {
@@ -179,14 +179,14 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
         val index = recordsFromCassandra.indexWhere {
           y =>
             y.PatientID.equals(x.PatientID) &&
-              y.SystemTime.equals(x.SystemTime) &&
+              y.DisplayTime.equals(x.DisplayTime) &&
               y.Name.equals(x.Name) &&
               y.Model.equals(x.Model)
         }
         assert(x.Model === recordsFromCassandra(index).Model)
     }
   }
-  test("TC_347 --~> should verify DisplayTime of the EventForPatientBySystemTime in cassandra is populating properly") {
+  test("TC_341 --~> should verify DisplayTime of the EventForPatientByDisplayTime in cassandra is populating properly") {
 
     //verify the results
     recordsFromCassandra.foreach {
@@ -201,7 +201,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
         val index = recordsFromCassandra.indexWhere {
           y =>
             y.PatientID.equals(x.PatientID) &&
-              y.SystemTime.equals(x.SystemTime) &&
+              y.DisplayTime.equals(x.DisplayTime) &&
               y.Name.equals(x.Name) &&
               y.Model.equals(x.Model)
         }
@@ -209,7 +209,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
     }
   }
   //Fri May 16 19:36:11 IST 2014   //Sat May 17 02:36:11 IST 2014
-  test("TC_393 --~> should verify SystemTime of the EventForPatientBySystemTime in cassandra is populating properly") {
+  test("TC_394 --~> should verify SystemTime of the EventForPatientByDisplayTime in cassandra is populating properly") {
 
     recordsFromCassandra.foreach {
       x =>
@@ -223,7 +223,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
         val index = recordsFromCassandra.indexWhere {
           y =>
             y.PatientID.equals(x.PatientID) &&
-              y.SystemTime.equals(x.SystemTime) &&
+              y.DisplayTime.equals(x.DisplayTime) &&
               y.Name.equals(x.Name) &&
               y.Model.equals(x.Model)
         }
