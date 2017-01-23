@@ -16,12 +16,12 @@ import scala.beans.BeanProperty
   @BeanProperty var IngestionTimestamp: Date = null
   @BeanProperty var PostID: UUID = null
   @BeanProperty var SubType: String = ""
-  @BeanProperty var SystemTimes: Date =null
+  @BeanProperty var SystemTime: Date =null
   @BeanProperty var Units: String = ""
   @BeanProperty var Value: String = ""
 
   override def toString: String = {
-    return ( ": "+PatientID+" , "+ DisplayTime+" , "+ Name+" , "+Model+" , "+IngestionTimestamp+" , "+PostID+" , "+SubType+" , "+SystemTimes+" , "+Units+" , "+Value)
+    return ( ": "+PatientID+" , "+ DisplayTime+" , "+ Name+" , "+Model+" , "+IngestionTimestamp+" , "+PostID+" , "+SubType+" , "+SystemTime+" , "+Units+" , "+Value)
   }
 
 
