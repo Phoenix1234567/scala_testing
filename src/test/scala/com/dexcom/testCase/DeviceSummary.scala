@@ -44,6 +44,7 @@ class DeviceSummary extends FunSuite  {
   }
 
   test("TC_328 --~> should verify SerialNumber of DeviceSummary in Cassandra is populating properly") {
+    //verify the results
     list_device_summary_cassandra.foreach {
       x=>
         assert(x.SerialNumber !== null)
