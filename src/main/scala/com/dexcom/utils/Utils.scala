@@ -3,6 +3,7 @@ package com.dexcom.utils
 import java.text.ParseException
 import java.util.{Date, UUID}
 
+//import com.dexcom.cassandra._
 import com.dexcom.common.Constants
 import com.dexcom.dto.{Patient, Post}
 import org.joda.time.format.DateTimeFormat
@@ -43,6 +44,32 @@ object Utils extends DexVictoriaConfigurations {
     list.toList
 
   }
+
+  /*def selectDeviceModel(settingsRecord: DeviceSettingsRecord): DexcomDeviceModel = {
+    //  In the Device Settings Record, there is a field (VersionNumber) that is a string value that corresponds to the
+    //  software version of the receiver.
+    //  4.0.1.x = G5
+    //  3.0.1.x = Share Direct (G4 + BLE radio)
+    //  2.0.1.x = G4
+
+    // iPhone app, and android US and 2 different OUS apps, respectively
+    val mobileSoftwareNumbers = Seq("SW10611", "SW10940", "SW11170", "SW11171")
+
+    if (mobileSoftwareNumbers.contains(settingsRecord.SoftwareNumber))
+      G5
+    else {
+      settingsRecord.SoftwareVersion match {
+        case g5 if g5.startsWith("4.0.1") => G5
+        case diasendModel if diasendModel.startsWith("1.1.") => G5 // Diasend upload
+        case sd if sd.startsWith("3.0.1") => ShareDirect
+        case g4 if g4.startsWith("2.0.1") => G4
+        case s: String =>
+          DexcomLoggingHelper.warn("DeviceInfoExtractor>>deviceModel Unknown software version: " + s + " defaulting to G5")
+          DefaultDeviceModel
+      }
+    }
+  }*/
+
   /**
     * Fetch patientid, source, etc from Patient.csv file
     *
