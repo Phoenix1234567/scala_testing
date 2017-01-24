@@ -62,7 +62,7 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
 
   /**
     * Fetch glucose data from the cassandra table
-    * @return
+    * @return the list of EGVForPatientBySystemTime
     */
   def getEGVForPatientBySystemTimeRecordsFromCassandra : List[EGVForPatient] = {
     val list_egv_record = new ListBuffer[EGVForPatient]
