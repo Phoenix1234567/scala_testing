@@ -7,6 +7,7 @@ import com.dexcom.connection.CassandraConnection
 import com.dexcom.{common, dto}
 import com.dexcom.dto._
 import com.dexcom.utils.Utils
+import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ListBuffer
 
@@ -15,7 +16,9 @@ import scala.collection.mutable.ListBuffer
   */
 class CalibrationDataHelper extends DexVictoriaConfigurations with CassandraQueries {
 
-  // fetch records from CSV MeterRecord
+  // fetch records from CSV MeterRecord and merge with patient_id from patient.csv
+
+  val logger = LoggerFactory.getLogger("CalibrationHelper")
 
   def getMeterRecordsFromCSV: List[MeterRecord] = {
     val list_meter_record = new ListBuffer[MeterRecord]
@@ -44,7 +47,7 @@ class CalibrationDataHelper extends DexVictoriaConfigurations with CassandraQuer
         Units = common.MeterRecord.Units,
         Value = cols(6).toInt,
         EntryType = cols(7),
-        Model = common.MeterRecord.Model
+        Model = common.MeterRecord.Model //yet to map model with software version
       )
       list_meter_record += meter_record
     }
@@ -54,6 +57,7 @@ class CalibrationDataHelper extends DexVictoriaConfigurations with CassandraQuer
   }
 /*
 * Fetch records from cassandra for CalibrationForPatientBySystemTime
+* @return list of records
 * */
   def getCalibrationForPatientBySystemTimeRecordsFromCassandra : List[MeterRecord] = {
     val list_calibration_record = new ListBuffer[MeterRecord]
@@ -82,23 +86,12 @@ class CalibrationDataHelper extends DexVictoriaConfigurations with CassandraQuer
     list_calibration_record.toList
   }
 
-  def getIndexForSystemTime(sourceData : MeterRecord, destinationDataList : List[MeterRecord]) : Int = {
 
-    val index = destinationDataList.indexWhere {
-      y =>
-          y.PatientId.equals(sourceData.PatientId) &&
-          y.SystemTime.equals(sourceData.SystemTime) &&
-         // y.PostId.equals(sourceData.PostId)
-          y.EntryType.equals(sourceData.EntryType)&&
-          y.Model.equals(sourceData.Model)
-    }
-    index
-  }
   /**
     * this method fetches cassandra data from table CalibrationForPatientByDisplayTime
     * @return the list of records
     */
-  /*def getEGVForPatientByDisplayTimeRecordsFromCassandra() : List[MeterRecord] = {
+  def getCalibrationForPatientByDisplayTimeRecordsFromCassandra : List[MeterRecord] = {
     val list_calibration_record = new ListBuffer[MeterRecord]
     val cassandra_connection = new CassandraConnection
     val session = cassandra_connection.getConnection // get cassandra connection
@@ -106,81 +99,59 @@ class CalibrationDataHelper extends DexVictoriaConfigurations with CassandraQuer
     val resultSet = session.execute(GET_CALIBRATION_FOR_PATIENT_BY_DISPLAY_TIME)
     while(!resultSet.isExhausted) {
       val row = resultSet.one()
-      val egv_record = dto.EGVForPatient (
+      val calibration_record = dto.MeterRecord (
         PatientId = row.getUUID("patient_id"),
         SystemTime = row.getTimestamp("system_time"),
-        PostId = row.getUUID("post_id"),
         DisplayTime = row.getTimestamp("display_time"),
-        IngestionTimestamp = row.getTimestamp("ingestion_timestamp"),
-        RateUnits = row.getString("rate_units"),
-        Source = row.getString("source"),
-        Status = row.getString("status"),
         TransmitterId = row.getString("transmitter_id"),
-        TransmitterTicks = row.getLong("transmitter_ticks"),
-        Trend = row.getString("trend"),
-        TrendRate = row.getDouble("trend_rate"),
-        Units = row.getString("units"),
-        Value = row.getInt("value")
-      )
-      list_egv_record += egv_record
-    }
-    cassandra_connection.closeConnection()  //close cassandra connection
-    list_egv_record.toList
-  }*/
-
-
-
-
-
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-  //fetch records from Cassandra
-
-/*  def getRecordsfromCassandra(): List[MeterRecord] = {
-
-    val list_calibration_record = new ListBuffer[MeterRecord]
-    val cassandra_connection = new CassandraConnection
-    val session = cassandra_connection.getConnection // get cassandra connection
-
-    val resultSet = session.execute(GET_CALIBRATION_FOR_PATIENT_BY_SYSTEM_TIME)
-    while (!resultSet.isExhausted) {
-      val row = resultSet.one()
-      val calibration_record = dto.MeterRecord(
-      /*  ,
-
-        SystemTime = row.getTimestamp("system_time"),
-        PostId = row.getUUID("post_id"),
-        DisplayTime = row.getTimestamp("display_time"),
         IngestionTimestamp = row.getTimestamp("ingestion_timestamp"),
-        RateUnits = row.getString("rate_units"),
-        Source = row.getString("source"),
-        Status = row.getString("status"),
-        TransmitterId = row.getString("transmitter_id"),
-        TransmitterTicks = row.getLong("transmitter_ticks"),
-        Trend = row.getString("trend"),
-        TrendRate = row.getDouble("trend_rate"),
         Units = row.getString("units"),
-        Value = row.getInt("value")*/
-        PatientId = row.getUUID("patient_id")
-
+        Value = row.getInt("value"),
+        EntryType = row.getString("entry_type"),
+        Model = row.getString("model")
       )
       list_calibration_record += calibration_record
     }
-    cassandra_connection.closeConnection() //close cassandra connection
+    cassandra_connection.closeConnection()  //close cassandra connection
     list_calibration_record.toList
-  }*/
+  }
 
+  /**
+    * this method returns the index of the list of cassandra data where source record matches
+    * @param sourceData of the source MeterRecord
+    * @param destinationDataList of the list of cassandra's getCalibrationForPatientBySystemTimeRecordsFromCassandra
+    * @return the index of the list
+    */
+  def getIndexForSystemTime(sourceData : MeterRecord, destinationDataList : List[MeterRecord]) : Int = {
+
+    val index = destinationDataList.indexWhere {
+      y =>
+        y.PatientId.equals(sourceData.PatientId) &&
+          y.SystemTime.equals(sourceData.SystemTime) &&
+          y.EntryType.equals(sourceData.EntryType)&&
+          y.Model.equals(sourceData.Model)
+    }
+    index
+  }
+
+  /**
+    * this method returns the index of the list of cassandra data where source record matches
+    * @param sourceData of the source MeterRecord
+    * @param destinationDataList of the list of cassandra's getCalibrationForPatientByDisplayTimeRecordsFromCassandra
+    * @return the index of the list
+    */
+
+
+  def getIndexForDisplayTime(sourceData : MeterRecord, destinationDataList : List[MeterRecord]) : Int = {
+
+    val index = destinationDataList.indexWhere {
+      y =>
+        y.PatientId.equals(sourceData.PatientId) &&
+          y.DisplayTime.equals(sourceData.DisplayTime) &&
+          y.EntryType.equals(sourceData.EntryType)&&
+          y.Model.equals(sourceData.Model)
+    }
+    index
+  }
+
+}

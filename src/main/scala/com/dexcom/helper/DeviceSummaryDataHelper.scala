@@ -1,21 +1,90 @@
-/*
 package com.dexcom.helper
 
-import java.util.Date
-
-import com.dexcom.common.Constants
-import com.dexcom.dto.{DeviceSummary, GlucoseRecord}
-import com.dexcom.utils.Utils
+import com.dexcom.common
+import com.dexcom.common.{CassandraQueries, Constants}
 import com.dexcom.configuration.DexVictoriaConfigurations
+import com.dexcom.connection.CassandraConnection
+import com.dexcom.dto._
+import com.dexcom.utils.Utils
+import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ListBuffer
 
-/**
-  * Created by sarvaraj on 16/01/17.
-  */
-class DeviceSummaryDataHelper extends DexVictoriaConfigurations {
+class DeviceSummaryDataHelper extends DexVictoriaConfigurations with CassandraQueries {
 
+  val logger = LoggerFactory.getLogger("DeviceSummaryHelper")
 
+  /**
+    * this method fetch data from CSV files
+    * @return the list of DeviceSummary
+    */
+  def getDeviceSummaryFromCSV : List[DeviceSummary] = {
 
+    val list_device_summary = new ListBuffer[DeviceSummary]
+    val post = Utils.postRecords()
+    val device_summary_csv = scala.io.Source.fromFile(device_settings_record_path)
+
+    for (
+      list_patient <- Utils.patientRecords();
+      line <- device_summary_csv.getLines().drop(1)
+    ){
+      val cols = line.split(Constants.Splitter).map(_.trim)
+      val device_summary = DeviceSummary(
+        PatientId = list_patient.PatientId,
+        Model = common.DeviceSummary.Model, //mapping of model with software version is yet to implement
+        SerialNumber = list_patient.TransmitterNumber,
+        CreateDate = Utils.stringToDate(post.PostedTimestamp) match {
+          case Right(x) => x
+        },
+        LastUpdateDate = Utils.stringToDate(post.PostedTimestamp) match {
+          case Right(x) => x
+        }
+      )
+      list_device_summary += device_summary
+    }
+    device_summary_csv.close()
+
+    list_device_summary.toList
+  }
+
+/*
+* Fetch records from Cassandra Device Summary
+* @return list of records
+* */
+def getDeviceSummaryRecordsFromCassandra : List[DeviceSummary] = {
+  val list_device_summary = new ListBuffer[DeviceSummary]
+  val cassandra_connection = new CassandraConnection
+  val session = cassandra_connection.getConnection // get cassandra connection
+
+  val resultSet = session.execute(GET_DEVICE_SUMMARY)
+  while(!resultSet.isExhausted){
+    val row = resultSet.one()
+    val device_summary_records = DeviceSummary(
+      PatientId = row.getUUID("patient_id"),
+      Model = row.getString("model"),
+      SerialNumber = row.getString("serial_number"),
+      CreateDate = row.getTimestamp("create_date"),
+      LastUpdateDate = row.getTimestamp("last_update_date")
+    )
+    list_device_summary+= device_summary_records
+  }
+  cassandra_connection.closeConnection()  //close cassandra connection
+  list_device_summary.toList
 }
-*/
+/*
+  this method returns the index of the list of cassandra data where source record matches
+  @param sourceData of the source DeviceSummary
+  @param destinationDataList of the list of cassandra's getDeviceSummaryRecordsFromCassandra
+  @return the index of the list
+ */
+  def getIndexForDeviceSummary(sourceData: DeviceSummary, destinationDataList : List[DeviceSummary]): Int ={
+
+    val index = destinationDataList.indexWhere{
+      y =>
+        y.PatientId.equals(sourceData.PatientId)&&
+        y.Model.equals(sourceData.Model)&&
+        y.SerialNumber.equals(sourceData.SerialNumber)
+    }
+    index
+  }
+}

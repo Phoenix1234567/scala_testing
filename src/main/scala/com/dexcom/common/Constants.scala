@@ -25,3 +25,7 @@ object MeterRecord {
   val Units = "mg/dL"
   val Model = "G5"
 }
+
+object DeviceSummary{
+  val Model = "G5"
+}
