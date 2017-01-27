@@ -15,6 +15,9 @@ trait DexVictoriaConfigurations {
   //read CSV path for Device_Settings_record
   lazy val device_settings_record_path = conf.getString("victoriaSourceCSVs.allCSVsPath")+"/DeviceSettingsRecord.csv"
 
+  //read CSV path for Alert_Settings_record
+  lazy val alert_settings_record_path = conf.getString("victoriaSourceCSVs.allCSVsPath")+"/AlertSettingsRecord.csv"
+
   //read CSV path for User_event_Record
   lazy val user_event_path = conf.getString("victoriaSourceCSVs.allCSVsPath")+"/UserEventRecord.csv"
 

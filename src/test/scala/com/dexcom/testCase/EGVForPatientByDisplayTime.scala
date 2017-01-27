@@ -268,7 +268,6 @@ class EGVForPatientByDisplayTime extends FunSuite {
     list_glucose_record_cassandra.foreach {
       x =>
         assert(x.TransmitterId !== null)
-        assert(x.TransmitterId !== "")
         assert(x.TransmitterId.isInstanceOf[String])
     }
 

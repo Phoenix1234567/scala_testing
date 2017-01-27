@@ -3,8 +3,10 @@ package com.dexcom.utils
 import java.text.ParseException
 import java.util.{Date, UUID}
 
-//import com.dexcom.cassandra._
-import com.dexcom.common.Constants
+import com.dexcom.dto.AlertSetting
+import net.liftweb.json.{DefaultFormats, Serialization}
+
+import com.dexcom.common.Constants._
 import com.dexcom.dto.{Patient, Post}
 import org.joda.time.format.DateTimeFormat
 import com.dexcom.configuration.DexVictoriaConfigurations
@@ -45,7 +47,19 @@ object Utils extends DexVictoriaConfigurations {
 
   }
 
-  /*def selectDeviceModel(settingsRecord: DeviceSettingsRecord): DexcomDeviceModel = {
+  /**
+    * Serialize object into json string
+    * Deserialize the json string into list[AlertSetting]
+    */
+  def getObject(alertVal : String) : List[AlertSetting]= {
+
+    implicit val format = DefaultFormats
+
+    val alertsObj = Serialization.read[List[AlertSetting]](alertVal)
+
+    alertsObj
+  }
+  def selectDeviceModel(softwareNumber: String, softwareVersion : String): String = {
     //  In the Device Settings Record, there is a field (VersionNumber) that is a string value that corresponds to the
     //  software version of the receiver.
     //  4.0.1.x = G5
@@ -55,20 +69,18 @@ object Utils extends DexVictoriaConfigurations {
     // iPhone app, and android US and 2 different OUS apps, respectively
     val mobileSoftwareNumbers = Seq("SW10611", "SW10940", "SW11170", "SW11171")
 
-    if (mobileSoftwareNumbers.contains(settingsRecord.SoftwareNumber))
+    if (mobileSoftwareNumbers.contains(softwareNumber))
       G5
     else {
-      settingsRecord.SoftwareVersion match {
+      softwareVersion match {
         case g5 if g5.startsWith("4.0.1") => G5
         case diasendModel if diasendModel.startsWith("1.1.") => G5 // Diasend upload
         case sd if sd.startsWith("3.0.1") => ShareDirect
         case g4 if g4.startsWith("2.0.1") => G4
-        case s: String =>
-          DexcomLoggingHelper.warn("DeviceInfoExtractor>>deviceModel Unknown software version: " + s + " defaulting to G5")
-          DefaultDeviceModel
+        case _ => DefaultDeviceModel
       }
     }
-  }*/
+  }
 
   /**
     * Fetch patientid, source, etc from Patient.csv file
@@ -79,7 +91,7 @@ object Utils extends DexVictoriaConfigurations {
     val list_patient_record = new ListBuffer[Patient]
     val patient_record_csv = scala.io.Source.fromFile(patient_records_path)
     for(line <- patient_record_csv.getLines().drop(1)) {
-      val cols = line.split(Constants.Splitter).map(_.trim)
+      val cols = line.split(Splitter).map(_.trim)
       val patient_record = Patient (
         PatientId = UUID.fromString(cols(0)),
         SourceStream = cols(1),
@@ -104,7 +116,7 @@ object Utils extends DexVictoriaConfigurations {
     var post_record: Post = null
     val post_record_csv = scala.io.Source.fromFile(post_path)
     for (line <- post_record_csv.getLines().drop(1)) {
-      val cols = line.split(Constants.Splitter).map(_.trim)
+      val cols = line.split(Splitter).map(_.trim)
       post_record = Post(
         PostId = UUID.fromString(cols(0)),
         PostedTimestamp = cols(1)
