@@ -1,10 +1,7 @@
 package com.dexcom.testCase
 
-import java.text.{ParseException, SimpleDateFormat}
 import java.util.{Date, UUID}
 
-import com.dexcom.common.CassandraQueries
-import com.dexcom.connection.CassandraConnection
 import com.dexcom.dto.{DeviceSummary, EGVForPatient}
 import com.dexcom.helper.{DeviceSummaryDataHelper, GlucoseDataHelper}
 import org.scalatest.{BeforeAndAfterAll, FunSuite}

@@ -21,5 +21,6 @@ case class DeviceUploadForPatient (
                                   SoftwareVersion : String,
                                   SystemTimeOffset : Int,
                                   TransmitterId  :String,
-                                  Udi : String
+                                  Udi : Option[String],
+                                  RecordedSystemTime : Option[Date]
                                   )

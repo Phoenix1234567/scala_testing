@@ -3,13 +3,12 @@ package com.dexcom.utils
 import java.text.ParseException
 import java.util.{Date, UUID}
 
-import com.dexcom.dto.AlertSetting
+import com.dexcom.dto.{AlertSetting, DeviceUploadForPatient, Patient, Post}
 import net.liftweb.json.{DefaultFormats, Serialization}
-
 import com.dexcom.common.Constants._
-import com.dexcom.dto.{Patient, Post}
 import org.joda.time.format.DateTimeFormat
 import com.dexcom.configuration.DexVictoriaConfigurations
+import com.dexcom.helper.DeviceUploadHelper
 
 import scala.collection.immutable.NumericRange
 import scala.collection.mutable.ListBuffer
@@ -19,22 +18,24 @@ import scala.collection.mutable.ListBuffer
   */
 object Utils extends DexVictoriaConfigurations {
 
-  def stringToDate(dateString : String) : Either[Unit, Date]= {
+  def stringToDate(dateString : String) : Option[Date]= {
 
     val df = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZ")
 
     try {
       val temp = df.withOffsetParsed().parseDateTime(dateString)
       val date = temp.toDate
-      Right(date)
+      Some(date)
     } catch {
       case e : ParseException =>
-        Left(e.printStackTrace())
+        e.printStackTrace()
+        None
     }
   }
 
   /**
     * this method used to format the double upto one decimal place
+    *
     * @param x is the numeric range of doubles to be formatted
     * @return the list of doubles formattted upto one decimal place
     */
@@ -59,6 +60,23 @@ object Utils extends DexVictoriaConfigurations {
 
     alertsObj
   }
+
+  def deviceModel : String = {
+    /*val deviceUploadHelper = new DeviceUploadHelper
+    val ordered_settings_record : List[DeviceUploadForPatient] = deviceUploadHelper.getDeviceUploadForPatientFromCSV
+      .get
+      .sortBy(_.RecordedSystemTime.get)
+
+    val latest_setting_record : Option[DeviceUploadForPatient] = ordered_settings_record.lastOption
+
+    latest_setting_record match {
+      case None => G5
+      case Some(setting) =>
+        selectDeviceModel(setting.SoftwareNumber, setting.SoftwareVersion)
+    }*/
+  ""
+  }
+
   def selectDeviceModel(softwareNumber: String, softwareVersion : String): String = {
     //  In the Device Settings Record, there is a field (VersionNumber) that is a string value that corresponds to the
     //  software version of the receiver.
@@ -97,7 +115,7 @@ object Utils extends DexVictoriaConfigurations {
         SourceStream = cols(1),
         SequenceNumber = cols(2),
         TransmitterNumber = cols(3),
-        ReceiverNumber = cols(4),
+        ReceiverNumber = Some(cols(4)),
         Tag = cols(5)
       )
       list_patient_record += patient_record
