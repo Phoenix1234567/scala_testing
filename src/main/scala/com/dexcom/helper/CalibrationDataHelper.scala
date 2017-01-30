@@ -6,7 +6,7 @@ import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.connection.CassandraConnection
 import com.dexcom.{common, dto}
 import com.dexcom.dto._
-import com.dexcom.utils.Utils
+import com.dexcom.utils.Utils._
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ListBuffer
@@ -22,32 +22,24 @@ class CalibrationDataHelper extends DexVictoriaConfigurations with CassandraQuer
 
   def getMeterRecordsFromCSV: List[MeterRecord] = {
     val list_meter_record = new ListBuffer[MeterRecord]
-    val post = Utils.postRecords()
+    val post = postRecords()
     val meter_record_csv = scala.io.Source.fromFile(meter_record_path)
 
     for (
-      list_patient <- Utils.patientRecords();
+      list_patient <- patientRecords();
       line <- meter_record_csv.getLines().drop(1)
     ) {
       val cols = line.split(Constants.Splitter).map(_.trim)
       val meter_record = dto.MeterRecord(
         PatientId = list_patient.PatientId,
-        //PostId = post.PostId,
-        SystemTime = Utils.stringToDate(cols(0)) match {
-          case Right(x) => x
-        },
-        DisplayTime = Utils.stringToDate(cols(1)) match {
-          case Right(x) => x
-        },
+        SystemTime = stringToDate(cols(0)).get,
+        DisplayTime = stringToDate(cols(5)).get,
         TransmitterId = cols(2),
-        IngestionTimestamp = Utils.stringToDate(cols(0)) match {
-          case Right(x) => x
-        },
-
+        IngestionTimestamp = stringToDate(cols(0)).get, //TODO
         Units = common.MeterRecord.Units,
         Value = cols(6).toInt,
         EntryType = cols(7),
-        Model = common.MeterRecord.Model //yet to map model with software version
+        Model = deviceModel
       )
       list_meter_record += meter_record
     }

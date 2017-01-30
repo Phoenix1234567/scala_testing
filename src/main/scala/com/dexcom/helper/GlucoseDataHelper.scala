@@ -33,25 +33,19 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
       val cols = line.split(Constants.Splitter).map(_.trim)
       val glucose_record = EGVForPatient(
         PatientId = list_patient.PatientId,
-        SystemTime = Utils.stringToDate(cols(0)) match {
-          case Right(x) => x
-        },
+        SystemTime = Utils.stringToDate(cols(0)).get,
         PostId = post.PostId,
-        DisplayTime = Utils.stringToDate(cols(1)) match {
-          case Right(x) => x
-        },
-        IngestionTimestamp = Utils.stringToDate(cols(1)) match {
-          case Right(x) => x
-        },
+        DisplayTime = Utils.stringToDate(cols(1)).get,
+        IngestionTimestamp = Utils.stringToDate(post.PostedTimestamp).get, // post.postedTimestamp
         RateUnits = common.EGVForPatient.RateUnits,
         Source = list_patient.SourceStream,
-        Status = cols(7),
+        Status = cols(7), //TODO
         TransmitterId = cols(2),
         TransmitterTicks = cols(3).toLong,
         Trend = cols(8),
         TrendRate = cols(9).toDouble,
         Units = common.EGVForPatient.Units,
-        Value = cols(6).toInt
+        Value = cols(6).toInt //TODO
       )
       list_glucose_record += glucose_record
     }

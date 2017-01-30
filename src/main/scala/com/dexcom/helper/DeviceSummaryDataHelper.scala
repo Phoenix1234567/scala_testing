@@ -1,11 +1,10 @@
 package com.dexcom.helper
 
-import com.dexcom.common
 import com.dexcom.common.{CassandraQueries, Constants}
 import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.connection.CassandraConnection
 import com.dexcom.dto._
-import com.dexcom.utils.Utils
+import com.dexcom.utils.Utils._
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ListBuffer
@@ -21,24 +20,28 @@ class DeviceSummaryDataHelper extends DexVictoriaConfigurations with CassandraQu
   def getDeviceSummaryFromCSV : List[DeviceSummary] = {
 
     val list_device_summary = new ListBuffer[DeviceSummary]
-    val post = Utils.postRecords()
+    val post = postRecords()
     val device_summary_csv = scala.io.Source.fromFile(device_settings_record_path)
 
     for (
-      list_patient <- Utils.patientRecords();
-      line <- device_summary_csv.getLines().drop(1)
+      list_patient <- patientRecords()//;
+      //line <- device_summary_csv.getLines().drop(1)
     ){
-      val cols = line.split(Constants.Splitter).map(_.trim)
+      val serialNumber: String = {
+        list_patient.SourceStream match {
+          case "Receiver" => list_patient.ReceiverNumber.getOrElse("???")
+          case "Phone" => "iPhone"
+          case "Phone2" => "Android"
+          case _ => "Unknown source"
+        }
+      }
+      //val cols = line.split(Constants.Splitter).map(_.trim)
       val device_summary = DeviceSummary(
         PatientId = list_patient.PatientId,
-        Model = common.DeviceSummary.Model, //mapping of model with software version is yet to implement
-        SerialNumber = list_patient.TransmitterNumber,
-        CreateDate = Utils.stringToDate(post.PostedTimestamp) match {
-          case Right(x) => x
-        },
-        LastUpdateDate = Utils.stringToDate(post.PostedTimestamp) match {
-          case Right(x) => x
-        }
+        Model = deviceModel,
+        SerialNumber = serialNumber,
+        CreateDate = stringToDate(post.PostedTimestamp).get, // createDate = post.postedTimestamp
+        LastUpdateDate = stringToDate(post.PostedTimestamp).get //lastUpdateDate = post.postedTimestamp
       )
       list_device_summary += device_summary
     }

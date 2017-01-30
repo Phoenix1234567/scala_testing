@@ -10,6 +10,6 @@ case class Patient (
                      SourceStream : String,
                      SequenceNumber : String,
                      TransmitterNumber : String,
-                     ReceiverNumber : String,
+                     ReceiverNumber : Option[String],
                      Tag : String
                    )

@@ -6,8 +6,8 @@ import com.datastax.driver.core.Session
 import com.dexcom.common.{CassandraQueries, Constants}
 import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.connection.CassandraConnection
-import com.dexcom.dto.{EGVForPatient, MeterRecord, UserEventRecord}
-import com.dexcom.utils.Utils
+import com.dexcom.dto.{EGVForPatient, UserEventRecord}
+import com.dexcom.utils.Utils._
 
 import scala.collection.mutable.ListBuffer
 
@@ -44,33 +44,23 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
 
   //fetch record from CSV
 
-  def getRecordsFromCSV() : List[UserEventRecord] = {
+  def getRecordsFromCSV : List[UserEventRecord] = {
     val list_user_event_records = new ListBuffer[UserEventRecord]
 
     val user_event_record_csv = scala.io.Source.fromFile(user_event_path)
-    val post = Utils.postRecords()
+    val post = postRecords()
 
-    for (patient<-Utils.patientRecords();line <- user_event_record_csv.getLines().drop(1)) {
+    for (patient<-patientRecords();line <- user_event_record_csv.getLines().drop(1)) {
       val cols = line.split(Constants.Splitter).map(_.trim)
       val event_record = new UserEventRecord()
         event_record.setPatientID(patient.PatientId)
-        event_record.setDisplayTime( Utils.stringToDate(cols(3)) match {
-          case Right(x) => x
-          case Left(e) => new Date(11111111)
-        })
+        event_record.setDisplayTime( stringToDate(cols(3)).get)
       event_record.setName(cols(4))
-      event_record.setModel("G5")
-      event_record.setIngestionTimestamp(Utils.stringToDate(cols(0)) match {
-        case Right(x) => x
-        case Left(e) => new Date(11111111)
-      })
-
+      event_record.setModel(deviceModel)
+      event_record.setIngestionTimestamp(stringToDate(cols(0)).get)
       event_record.setPostID(post.PostId)
       event_record.setSubType(cols(5))
-      event_record.setSystemTime(Utils.stringToDate(cols(2)) match {
-        case Right(x) => x
-        case Left(e) => new Date(11111111)
-      })
+      event_record.setSystemTime(stringToDate(cols(2)).get)
       event_record.setUnits(cols(7))
       event_record.setValue(cols(6))
       list_user_event_records += event_record

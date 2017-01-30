@@ -21,7 +21,7 @@ trait CassandraQueries extends DexVictoriaConfigurations {
   lazy val GET_DEVICE_UPLOAD_FOR_PATIENT = s"""SELECT patient_id,
                                             model,
                                             device_upload_date,
-                                            tojson(alerts),
+                                            alerts,
                                             display_time_offset,
                                             ingestion_timestamp,
                                             is_24_hour_mode,
