@@ -6,7 +6,7 @@ import com.datastax.driver.core.Session
 import com.dexcom.common.{CassandraQueries, Constants}
 import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.connection.CassandraConnection
-import com.dexcom.dto.{EGVForPatient, UserEventRecord}
+import com.dexcom.dto.{EGVForPatient, MeterRecord, UserEventRecord}
 import com.dexcom.utils.Utils
 
 import scala.collection.mutable.ListBuffer
@@ -78,6 +78,44 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
     user_event_record_csv.close()
     println(list_user_event_records.toList.toString())
     list_user_event_records.toList
+  }
+
+
+
+  /**
+    * this method returns the index of the list of cassandra data where source record matches
+    * @param sourceData of the source MeterRecord
+    * @param destinationDataList of the list of cassandra's getCalibrationForPatientBySystemTimeRecordsFromCassandra
+    * @return the index of the list
+    */
+  def getIndexForSystemTime(sourceData : UserEventRecord, destinationDataList : List[UserEventRecord]) : Int = {
+
+    val index = destinationDataList.indexWhere {
+      y =>
+        y.PatientID.equals(sourceData.PatientID) &&
+          y.SystemTime.equals(sourceData.SystemTime) &&
+          y.PostID.equals(sourceData.PostID) &&
+          y.Model.equals(sourceData.Model)
+    }
+    index
+  }
+
+  /**
+    * this method returns the index of the list of cassandra data where source record matches
+    * @param sourceData of the source MeterRecord
+    * @param destinationDataList of the list of cassandra's userEventRecordsFromCassandra
+    * @return the index of the list
+    */
+  def getIndexForDisplayTime(sourceData : UserEventRecord, destinationDataList : List[UserEventRecord]) : Int = {
+
+    val index = destinationDataList.indexWhere {
+      y =>
+        y.PatientID.equals(sourceData.PatientID) &&
+          y.SystemTime.equals(sourceData.DisplayTime) &&
+          y.PostID.equals(sourceData.PostID) &&
+          y.Model.equals(sourceData.Model)
+    }
+    index
   }
 
 }
