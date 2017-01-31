@@ -23,7 +23,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
     cassandraConnection = new CassandraConnection()
     userEventDataHelper = new UserEventDataHelper(cassandraConnection.getConnection)
     recordsFromCassandra = userEventDataHelper.getRecordFromCassandra()
-    recordsFromCSV = userEventDataHelper.getRecordsFromCSV()
+    //recordsFromCSV = userEventDataHelper.getRecordsFromCSV()
     initNameAndSubtypeMapping
 
   }
@@ -37,28 +37,9 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
     nameAndSubtypeMapping
   }
 
-
-  test("TC_386 --~> should verify PatientId of the EventForPatientBySystemTime in cassandra is populating properly") {
-
-    //verify the results
-    recordsFromCassandra.foreach {
-      x =>
-        assert(x.PatientID !== null)
-        assert(x.PatientID !== "")
-        assert(x.PatientID.isInstanceOf[UUID])
-    }
-
-    recordsFromCSV.foreach {
-      x =>
-        val index = userEventDataHelper.getIndexForSystemTime(x, recordsFromCassandra)
-        if (index != -1)
-          assert(x.PatientID === recordsFromCassandra(index).PatientID)
-    }
-  }
-
-
   test("TC_343 --~> should verify Name of the EventForPatientBySystemTime in cassandra is populating properly") {
 
+    val list_name = List("Health","Exercise","Carbs","Insulin")
     //verify the results
     recordsFromCassandra.foreach {
       x =>
@@ -69,9 +50,11 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
 
     recordsFromCSV.foreach {
       x =>
-        val index = userEventDataHelper.getIndexForSystemTime(x, recordsFromCassandra)
-        if (index != -1)
-          assert(x.Name === recordsFromCassandra(index).Name)
+        val index = userEventDataHelper.getIndexForSystemTime(x,recordsFromCassandra)
+        if(index != -1) {
+          assert(x.Name === recordsFromCassandra(index).Name && list_name.contains(recordsFromCassandra(index).Name))
+        }
+        else fail(s"Record not found : $x")
     }
   }
 
@@ -80,15 +63,16 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
     //verify the results
     recordsFromCassandra.foreach {
       x =>
-        assert(x.SubType !== null)
+        assert(x.SubType !== null) //can be null
         assert(x.SubType.isInstanceOf[String])
     }
 
     recordsFromCSV.foreach {
       x =>
-        val index = userEventDataHelper.getIndexForSystemTime(x, recordsFromCassandra)
-        if (index != -1)
-          assert(x.Name === recordsFromCassandra(index).Name && nameAndSubtypeMapping.get(x.Name).contains(recordsFromCassandra(index).SubType))
+        val index = userEventDataHelper.getIndexForSystemTime(x,recordsFromCassandra)
+        if(index != -1)
+        assert(x.Name === recordsFromCassandra(index).Name && nameAndSubtypeMapping.get(x.Name).contains(recordsFromCassandra(index).SubType))
+        else fail(s"Record not found : $x")
     }
   }
 
@@ -97,19 +81,22 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
     //verify the results
     recordsFromCassandra.foreach {
       x =>
-        assert(x.Value !== null)
+        assert(x.Value !== null) //rework on this constraint as value is nullable
         assert(x.Value.isInstanceOf[String])
     }
 
     recordsFromCSV.foreach {
       x =>
-        val index = userEventDataHelper.getIndexForSystemTime(x, recordsFromCassandra)
+        val index = userEventDataHelper.getIndexForSystemTime(x,recordsFromCassandra)
         if (index != -1) {
+          println(index)
           assert(x.Value === recordsFromCassandra(index).Value)
-          if (x.Name === "Carbs" || x.Name === "Insulin")
+
+          if (x.Name === "Carbs" || x.Name === "Insulin" || x.Name === "Exercise")
             assert(recordsFromCassandra(index).Value !== "")
           else assert(recordsFromCassandra(index).Value === "")
         }
+        else fail(s"Record not found : $x")
     }
   }
 
@@ -118,14 +105,14 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
     //verify the results
     recordsFromCassandra.foreach {
       x =>
-        assert(x.Units !== null)
+        assert(x.Units !== null) //As per document unit can be nullable
         assert(x.Units.isInstanceOf[String])
     }
 
     recordsFromCSV.foreach {
       x =>
-        val index = userEventDataHelper.getIndexForSystemTime(x, recordsFromCassandra)
-        if (index != -1) {
+        val index = userEventDataHelper.getIndexForSystemTime(x,recordsFromCassandra)
+        if(index != -1) {
           assert(x.Units === recordsFromCassandra(index).Units)
           if (x.Name === "Carbs")
             assert(recordsFromCassandra(index).Units.equalsIgnoreCase("grams"))
@@ -136,6 +123,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
           if (x.Name === "Health")
             assert(recordsFromCassandra(index).Units === "")
         }
+        else fail(s"Record not found : $x")
     }
   }
 
@@ -151,11 +139,12 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
 
     recordsFromCSV.foreach {
       x =>
-        val index = userEventDataHelper.getIndexForSystemTime(x, recordsFromCassandra)
-        if (index != -1)
-          assert(x.Model === recordsFromCassandra(index).Model)
+        val index = userEventDataHelper.getIndexForSystemTime(x,recordsFromCassandra)
+        assert(x.Model === recordsFromCassandra(index).Model)
+        assert(recordsFromCassandra(index).Model === "G5" || recordsFromCassandra(index).Model === "G4")
     }
   }
+
   test("TC_347 --~> should verify DisplayTime of the EventForPatientBySystemTime in cassandra is populating properly") {
 
     //verify the results
@@ -168,28 +157,45 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
 
     recordsFromCSV.foreach {
       x =>
-        val index = userEventDataHelper.getIndexForSystemTime(x, recordsFromCassandra)
-        if (index != -1)
-          assert(x.DisplayTime === recordsFromCassandra(index).DisplayTime)
+        val index = userEventDataHelper.getIndexForSystemTime(x,recordsFromCassandra)
+        assert(x.DisplayTime === recordsFromCassandra(index).DisplayTime)
     }
   }
   //Fri May 16 19:36:11 IST 2014   //Sat May 17 02:36:11 IST 2014
-  test("TC_393 --~> should verify SystemTime of the EventForPatientBySystemTime in cassandra is populating properly") {
+  test("TC_386 --~> should verify PatientId of the EventForPatientBySystemTime in cassandra is populating properly") {
 
+    //verify the results
     recordsFromCassandra.foreach {
       x =>
-        assert(x.DisplayTime !== null)
-        assert(x.DisplayTime !== "")
-        assert(x.DisplayTime.isInstanceOf[Date])
+        assert(x.PatientID !== null)
+        assert(x.PatientID !== "")
+        assert(x.PatientID.isInstanceOf[UUID])
     }
 
     recordsFromCSV.foreach {
       x =>
-        val index = userEventDataHelper.getIndexForSystemTime(x, recordsFromCassandra)
-        if (index != -1)
-          assert(x.SystemTime === recordsFromCassandra(index).SystemTime)
+        val index = userEventDataHelper.getIndexForSystemTime(x,recordsFromCassandra)
+        if(index != -1){
+          assert(x.PatientID === recordsFromCassandra(index).PatientID)
+        }
+        else fail(s"Record not found : $x")
+    }
+  }
+
+  test("TC_393 --~> should verify SystemTime of the EventForPatientBySystemTime in cassandra is populating properly") {
+
+    recordsFromCassandra.foreach {
+      x =>
+        assert(x.SystemTime !== null)
+        assert(x.SystemTime !== "")
+        assert(x.SystemTime.isInstanceOf[Date])
     }
 
+    recordsFromCSV.foreach {
+      x =>
+        val index = userEventDataHelper.getIndexForSystemTime(x,recordsFromCassandra)
+        assert(x.SystemTime === recordsFromCassandra(index).SystemTime)
+    }
   }
 
   override def afterAll() = {
