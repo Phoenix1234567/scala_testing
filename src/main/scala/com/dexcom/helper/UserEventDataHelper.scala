@@ -66,7 +66,6 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
       list_user_event_records += event_record
     }
     user_event_record_csv.close()
-    println(list_user_event_records.toList.toString())
     list_user_event_records.toList
   }
 

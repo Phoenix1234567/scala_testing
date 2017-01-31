@@ -161,8 +161,11 @@ class EventForPatientByDisplayTime extends FunSuite with CassandraQueries with B
     recordsFromCSV.foreach {
       x =>
         val index = userEventDataHelper.getIndexForDisplayTime(x,recordsFromCassandra)
-        assert(x.Model === recordsFromCassandra(index).Model)
-        assert(recordsFromCassandra(index).Model === "G5" || recordsFromCassandra(index).Model === "G4")
+        if(index != -1) {
+          assert(x.Model === recordsFromCassandra(index).Model)
+          assert(recordsFromCassandra(index).Model === "G5" || recordsFromCassandra(index).Model === "G4")
+        }
+        else fail(s"Record not found : $x")
     }
   }
 
@@ -179,7 +182,9 @@ class EventForPatientByDisplayTime extends FunSuite with CassandraQueries with B
     recordsFromCSV.foreach {
       x =>
         val index = userEventDataHelper.getIndexForDisplayTime(x,recordsFromCassandra)
+        if(index != -1)
         assert(x.DisplayTime === recordsFromCassandra(index).DisplayTime)
+        else fail(s"Record not found : $x")
     }
   }
   //Fri May 16 19:36:11 IST 2014   //Sat May 17 02:36:11 IST 2014
@@ -195,7 +200,10 @@ class EventForPatientByDisplayTime extends FunSuite with CassandraQueries with B
     recordsFromCSV.foreach {
       x =>
         val index = userEventDataHelper.getIndexForSystemTime(x,recordsFromCassandra)
+        if(index != -1)
         assert(x.SystemTime === recordsFromCassandra(index).SystemTime)
+        else fail(s"Record not found : $x")
+
     }
   }
 

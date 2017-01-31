@@ -18,23 +18,7 @@ trait CassandraQueries extends DexVictoriaConfigurations {
   lazy val GET_EGV_FOR_PATIENT_BY_DISPLAY_TIME = s"SELECT * FROM $keySpaceName.egv_for_patient_by_display_time"
 
   //query to fetch all records from device_upload_for_patient cassandra table
-  lazy val GET_DEVICE_UPLOAD_FOR_PATIENT = s"""SELECT patient_id,
-                                            model,
-                                            device_upload_date,
-                                            alerts,
-                                            display_time_offset,
-                                            ingestion_timestamp,
-                                            is_24_hour_mode,
-                                            is_blinded_mode,
-                                            is_mmol_display_mode,
-                                            language,
-                                            serial_number,
-                                            software_number,
-                                            software_version,
-                                            system_time_offset,
-                                            transmitter_id,
-                                            udi
-                                            FROM $keySpaceName.device_upload_for_patient"""
+  lazy val GET_DEVICE_UPLOAD_FOR_PATIENT = s"SELECT * FROM $keySpaceName.device_upload_for_patient"
 
   lazy val GET_CALIBRATION_FOR_PATIENT_BY_SYSTEM_TIME = s"SELECT * FROM $keySpaceName.calibration_for_patient_by_system_time"
 
