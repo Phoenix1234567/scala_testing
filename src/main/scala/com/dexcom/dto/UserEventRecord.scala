@@ -7,7 +7,7 @@ import scala.beans.BeanProperty
 /**
   * Created by sarvaraj on 17/01/17.
   */
-  class UserEventRecord {
+class UserEventRecord {
 
   @BeanProperty var PatientID: UUID = null
   @BeanProperty var DisplayTime: Date = null
@@ -16,14 +16,13 @@ import scala.beans.BeanProperty
   @BeanProperty var IngestionTimestamp: Date = null
   @BeanProperty var PostID: UUID = null
   @BeanProperty var SubType: String = ""
-  @BeanProperty var SystemTime: Date =null
+  @BeanProperty var SystemTime: Date = null
   @BeanProperty var Units: String = ""
   @BeanProperty var Value: String = ""
 
   override def toString: String = {
-    return ( ": "+PatientID+" , "+ DisplayTime+" , "+ Name+" , "+Model+" , "+IngestionTimestamp+" , "+PostID+" , "+SubType+" , "+SystemTime+" , "+Units+" , "+Value)
+    return (": " + PatientID + " , " + DisplayTime + " , " + Name + " , " + Model + " , " + IngestionTimestamp + " , " + PostID + " , " + SubType + " , " + SystemTime + " , " + Units + " , " + Value)
   }
-
 
 
 }

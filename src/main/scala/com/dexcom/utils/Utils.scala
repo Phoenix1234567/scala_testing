@@ -3,11 +3,11 @@ package com.dexcom.utils
 import java.text.ParseException
 import java.util.{Date, UUID}
 
-import com.dexcom.dto.{DeviceUploadForPatient, Patient, Post}
 import com.dexcom.common.Constants._
-import org.joda.time.format.DateTimeFormat
 import com.dexcom.configuration.DexVictoriaConfigurations
+import com.dexcom.dto.{DeviceUploadForPatient, Patient, Post}
 import com.dexcom.helper.DeviceUploadHelper
+import org.joda.time.format.DateTimeFormat
 
 import scala.collection.immutable.NumericRange
 import scala.collection.mutable.ListBuffer
@@ -47,18 +47,6 @@ object Utils extends DexVictoriaConfigurations {
 
   }
 
-  /**
-    * Serialize object into json string
-    * Deserialize the json string into list[AlertSetting]
-    */
-  /*def getObject(alertVal : String) : List[AlertSetting]= {
-
-    implicit val format = DefaultFormats
-
-    val alertsObj = Serialization.read[List[AlertSetting]](alertVal)
-
-    alertsObj
-  }*/
 
   def deviceModel: String = {
     val deviceUploadHelper = new DeviceUploadHelper

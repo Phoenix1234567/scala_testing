@@ -13,12 +13,14 @@ import io.netty.handler.ssl.SslContextBuilder
   */
 class CassandraConnection extends DexVictoriaConfigurations {
 
-    var cluster: Cluster = null
+  var cluster: Cluster = null
+
   /**
     * Getting cassandra connection
+    *
     * @return session of the cassandra
     */
-  def getConnection : Session = {
+  def getConnection: Session = {
     val ks = KeyStore.getInstance("JKS")
     // make sure you close this stream properly (not shown here for brevity)
     val trustStore: InputStream = new FileInputStream(trueStorePath)
@@ -33,11 +35,11 @@ class CassandraConnection extends DexVictoriaConfigurations {
     val sslOptions: SSLOptions = new NettySSLOptions(builder.build())
 
     cluster = Cluster.builder()
-        .addContactPoint(hostname)
-        .withCredentials(userName, password)
-        .withPort(port)
-        .withSSL(sslOptions)
-        .build()
+      .addContactPoint(hostname)
+      .withCredentials(userName, password)
+      .withPort(port)
+      .withSSL(sslOptions)
+      .build()
 
     cluster.connect()
   }
@@ -46,6 +48,6 @@ class CassandraConnection extends DexVictoriaConfigurations {
     * To close cassandra connection
     */
   def closeConnection() {
-        cluster.close()
-    }
+    cluster.close()
+  }
 }

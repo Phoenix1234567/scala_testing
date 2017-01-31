@@ -15,9 +15,10 @@ class DeviceSummaryDataHelper extends DexVictoriaConfigurations with CassandraQu
 
   /**
     * this method fetch data from CSV files
+    *
     * @return the list of DeviceSummary
     */
-  def getDeviceSummaryFromCSV : List[DeviceSummary] = {
+  def getDeviceSummaryFromCSV: List[DeviceSummary] = {
 
     val list_device_summary = new ListBuffer[DeviceSummary]
     val post_records = postRecords()
@@ -25,9 +26,9 @@ class DeviceSummaryDataHelper extends DexVictoriaConfigurations with CassandraQu
 
     for (
       list_post <- post_records;
-      list_patient <- patientRecords()//;
-      //line <- device_summary_csv.getLines().drop(1)
-    ){
+      list_patient <- patientRecords() //;
+    //line <- device_summary_csv.getLines().drop(1)
+    ) {
       //val cols = line.split(Constants.Splitter).map(_.trim)
       val device_summary = DeviceSummary(
         PatientId = list_patient.PatientId,
@@ -43,43 +44,44 @@ class DeviceSummaryDataHelper extends DexVictoriaConfigurations with CassandraQu
     list_device_summary.toList
   }
 
-/*
-* Fetch records from Cassandra Device Summary
-* @return list of records
-* */
-def getDeviceSummaryRecordsFromCassandra : List[DeviceSummary] = {
-  val list_device_summary = new ListBuffer[DeviceSummary]
-  val cassandra_connection = new CassandraConnection
-  val session = cassandra_connection.getConnection // get cassandra connection
+  /*
+  * Fetch records from Cassandra Device Summary
+  * @return list of records
+  * */
+  def getDeviceSummaryRecordsFromCassandra: List[DeviceSummary] = {
+    val list_device_summary = new ListBuffer[DeviceSummary]
+    val cassandra_connection = new CassandraConnection
+    val session = cassandra_connection.getConnection // get cassandra connection
 
-  val resultSet = session.execute(GET_DEVICE_SUMMARY)
-  while(!resultSet.isExhausted){
-    val row = resultSet.one()
-    val device_summary_records = DeviceSummary(
-      PatientId = row.getUUID("patient_id"),
-      Model = row.getString("model"),
-      SerialNumber = row.getString("serial_number"),
-      CreateDate = row.getTimestamp("create_date"),
-      LastUpdateDate = row.getTimestamp("last_update_date")
-    )
-    list_device_summary+= device_summary_records
+    val resultSet = session.execute(GET_DEVICE_SUMMARY)
+    while (!resultSet.isExhausted) {
+      val row = resultSet.one()
+      val device_summary_records = DeviceSummary(
+        PatientId = row.getUUID("patient_id"),
+        Model = row.getString("model"),
+        SerialNumber = row.getString("serial_number"),
+        CreateDate = row.getTimestamp("create_date"),
+        LastUpdateDate = row.getTimestamp("last_update_date")
+      )
+      list_device_summary += device_summary_records
+    }
+    cassandra_connection.closeConnection() //close cassandra connection
+    list_device_summary.toList
   }
-  cassandra_connection.closeConnection()  //close cassandra connection
-  list_device_summary.toList
-}
-/*
-  this method returns the index of the list of cassandra data where source record matches
-  @param sourceData of the source DeviceSummary
-  @param destinationDataList of the list of cassandra's getDeviceSummaryRecordsFromCassandra
-  @return the index of the list
- */
-  def getIndexForDeviceSummary(sourceData: DeviceSummary, destinationDataList : List[DeviceSummary]): Int ={
 
-    val index = destinationDataList.indexWhere{
+  /*
+    this method returns the index of the list of cassandra data where source record matches
+    @param sourceData of the source DeviceSummary
+    @param destinationDataList of the list of cassandra's getDeviceSummaryRecordsFromCassandra
+    @return the index of the list
+   */
+  def getIndexForDeviceSummary(sourceData: DeviceSummary, destinationDataList: List[DeviceSummary]): Int = {
+
+    val index = destinationDataList.indexWhere {
       y =>
-        y.PatientId.equals(sourceData.PatientId)&&
-        y.Model.equals(sourceData.Model)&&
-        y.SerialNumber.equals(sourceData.SerialNumber)
+        y.PatientId.equals(sourceData.PatientId) &&
+          y.Model.equals(sourceData.Model) &&
+          y.SerialNumber.equals(sourceData.SerialNumber)
     }
     index
   }

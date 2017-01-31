@@ -1,7 +1,6 @@
 package com.dexcom.dto
 
-import java.util.{UUID,Date}
-
+import java.util.{Date, UUID}
 
 
 /**

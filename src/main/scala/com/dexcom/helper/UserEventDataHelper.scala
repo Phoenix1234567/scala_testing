@@ -1,12 +1,9 @@
 package com.dexcom.helper
 
-import java.util.Date
-
 import com.datastax.driver.core.Session
 import com.dexcom.common.{CassandraQueries, Constants}
 import com.dexcom.configuration.DexVictoriaConfigurations
-import com.dexcom.connection.CassandraConnection
-import com.dexcom.dto.{EGVForPatient, UserEventRecord}
+import com.dexcom.dto.UserEventRecord
 import com.dexcom.utils.Utils._
 
 import scala.collection.mutable.ListBuffer
@@ -14,16 +11,16 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by sarvaraj on 17/01/17.
   */
-class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations with CassandraQueries{
+class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations with CassandraQueries {
 
   // fetch records from cassandra
 
   def getRecordFromCassandra(): List[UserEventRecord] = {
     val list_user_event_record = new ListBuffer[UserEventRecord]
     val resultSet = session.execute(GET_EVENT_FOR_PATIENT_BY_SYSTEM_TIME)
-    while(!resultSet.isExhausted) {
+    while (!resultSet.isExhausted) {
       val row = resultSet.one()
-     val user_event_records = new UserEventRecord()
+      val user_event_records = new UserEventRecord()
       user_event_records.setPatientID(row.getUUID("patient_id"))
       user_event_records.setDisplayTime(row.getTimestamp("display_time"))
       user_event_records.setName(row.getString("name"))
@@ -44,17 +41,17 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
 
   //fetch record from CSV
 
-  def getRecordsFromCSV : List[UserEventRecord] = {
+  def getRecordsFromCSV: List[UserEventRecord] = {
     val list_user_event_records = new ListBuffer[UserEventRecord]
 
     val user_event_record_csv = scala.io.Source.fromFile(user_event_path)
     val post_records = postRecords()
 
-    for (list_post <- post_records; patient<-patientRecords();line <- user_event_record_csv.getLines().drop(1)) {
+    for (list_post <- post_records; patient <- patientRecords(); line <- user_event_record_csv.getLines().drop(1)) {
       val cols = line.split(Constants.Splitter).map(_.trim)
       val event_record = new UserEventRecord()
-        event_record.setPatientID(patient.PatientId)
-        event_record.setDisplayTime( stringToDate(cols(3)).get)
+      event_record.setPatientID(patient.PatientId)
+      event_record.setDisplayTime(stringToDate(cols(3)).get)
       event_record.setName(cols(4))
       event_record.setModel(deviceModel)
       event_record.setIngestionTimestamp(stringToDate(list_post.PostedTimestamp).get)
@@ -70,14 +67,14 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
   }
 
 
-
   /**
     * this method returns the index of the list of cassandra data where source record matches
-    * @param sourceData of the source MeterRecord
+    *
+    * @param sourceData          of the source MeterRecord
     * @param destinationDataList of the list of cassandra's getCalibrationForPatientBySystemTimeRecordsFromCassandra
     * @return the index of the list
     */
-  def getIndexForSystemTime(sourceData : UserEventRecord, destinationDataList : List[UserEventRecord]) : Int = {
+  def getIndexForSystemTime(sourceData: UserEventRecord, destinationDataList: List[UserEventRecord]): Int = {
 
     val index = destinationDataList.indexWhere {
       y =>
@@ -91,11 +88,12 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
 
   /**
     * this method returns the index of the list of cassandra data where source record matches
-    * @param sourceData of the source MeterRecord
+    *
+    * @param sourceData          of the source MeterRecord
     * @param destinationDataList of the list of cassandra's userEventRecordsFromCassandra
     * @return the index of the list
     */
-  def getIndexForDisplayTime(sourceData : UserEventRecord, destinationDataList : List[UserEventRecord]) : Int = {
+  def getIndexForDisplayTime(sourceData: UserEventRecord, destinationDataList: List[UserEventRecord]): Int = {
 
     val index = destinationDataList.indexWhere {
       y =>

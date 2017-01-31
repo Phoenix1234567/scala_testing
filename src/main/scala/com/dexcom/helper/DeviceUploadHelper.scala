@@ -44,6 +44,7 @@ class DeviceUploadHelper extends CassandraQueries {
   /**
     * this method returns the unit of alert setting
     * get that code from DEV in modules AlertSetting.scalas
+    *
     * @param alertName of te alert
     * @return the alerts' unit
     */

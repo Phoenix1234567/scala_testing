@@ -19,9 +19,10 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
 
   /**
     * this method fetch data from CSV files
+    *
     * @return the list of EGVRecords
     */
-  def getGlucoseRecordsFromCSV : List[EGVForPatient] = {
+  def getGlucoseRecordsFromCSV: List[EGVForPatient] = {
     val list_glucose_record = new ListBuffer[EGVForPatient]
     val post_records = Utils.postRecords()
     val glucose_record_csv = scala.io.Source.fromFile(glucose_record_path)
@@ -47,9 +48,9 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
         TrendRate = cols(9).toDouble,
         Units = common.EGVForPatient.Units,
         Value = cols(6) match {
-        case x if 40 to 400 contains x => Some(x.toInt)
-        case _ => None
-      }
+          case x if 40 to 400 contains x => Some(x.toInt)
+          case _ => None
+        }
       )
       list_glucose_record += glucose_record
     }
@@ -60,17 +61,18 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
 
   /**
     * Fetch glucose data from the cassandra table
+    *
     * @return the list of EGVForPatientBySystemTime
     */
-  def getEGVForPatientBySystemTimeRecordsFromCassandra : List[EGVForPatient] = {
+  def getEGVForPatientBySystemTimeRecordsFromCassandra: List[EGVForPatient] = {
     val list_egv_record = new ListBuffer[EGVForPatient]
     val cassandra_connection = new CassandraConnection
     val session = cassandra_connection.getConnection // get cassandra connection
 
     val resultSet = session.execute(GET_EGV_FOR_PATIENT_BY_SYSTEM_TIME)
-    while(!resultSet.isExhausted) {
+    while (!resultSet.isExhausted) {
       val row = resultSet.one()
-      val egv_record = EGVForPatient (
+      val egv_record = EGVForPatient(
         PatientId = row.getUUID("patient_id"),
 
         SystemTime = row.getTimestamp("system_time"),
@@ -89,23 +91,24 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
       )
       list_egv_record += egv_record
     }
-    cassandra_connection.closeConnection()  //close cassandra connection
+    cassandra_connection.closeConnection() //close cassandra connection
     list_egv_record.toList
   }
 
   /**
     * this method fetches cassandra data from table EGVForPatientByDisplayTime
+    *
     * @return the list of records
     */
-  def getEGVForPatientByDisplayTimeRecordsFromCassandra : List[EGVForPatient] = {
+  def getEGVForPatientByDisplayTimeRecordsFromCassandra: List[EGVForPatient] = {
     val list_egv_record = new ListBuffer[EGVForPatient]
     val cassandra_connection = new CassandraConnection
     val session = cassandra_connection.getConnection // get cassandra connection
 
     val resultSet = session.execute(GET_EGV_FOR_PATIENT_BY_DISPLAY_TIME)
-    while(!resultSet.isExhausted) {
+    while (!resultSet.isExhausted) {
       val row = resultSet.one()
-      val egv_record = EGVForPatient (
+      val egv_record = EGVForPatient(
         PatientId = row.getUUID("patient_id"),
         SystemTime = row.getTimestamp("system_time"),
         PostId = row.getUUID("post_id"),
@@ -123,34 +126,36 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
       )
       list_egv_record += egv_record
     }
-    cassandra_connection.closeConnection()  //close cassandra connection
+    cassandra_connection.closeConnection() //close cassandra connection
     list_egv_record.toList
   }
 
   /**
     * this method returns the index of the list of cassandra data where source record matches
-    * @param sourceData of the source EGVForPatient
+    *
+    * @param sourceData          of the source EGVForPatient
     * @param destinationDataList of the list of cassandra's EGVForPatientBySystemTime
     * @return the index of the list
     */
-  def getIndexForSystemTime(sourceData : EGVForPatient, destinationDataList : List[EGVForPatient]) : Int = {
+  def getIndexForSystemTime(sourceData: EGVForPatient, destinationDataList: List[EGVForPatient]): Int = {
 
     val index = destinationDataList.indexWhere {
       y =>
         y.PatientId.equals(sourceData.PatientId) &&
-        y.SystemTime.equals(sourceData.SystemTime) &&
-        y.PostId.equals(sourceData.PostId)
+          y.SystemTime.equals(sourceData.SystemTime) &&
+          y.PostId.equals(sourceData.PostId)
     }
     index
   }
 
   /**
     * this method returns the index of the list of cassandra data where source record matches
-    * @param sourceData of the source EGVForPatient
+    *
+    * @param sourceData          of the source EGVForPatient
     * @param destinationDataList of the list of cassandra's getEGVForPatientByDisplayTimeRecordsFromCassandra
     * @return the index of the list
     */
-  def getIndexForDisplayTime(sourceData : EGVForPatient, destinationDataList : List[EGVForPatient]) : Int = {
+  def getIndexForDisplayTime(sourceData: EGVForPatient, destinationDataList: List[EGVForPatient]): Int = {
 
     val index = destinationDataList.indexWhere {
       y =>
