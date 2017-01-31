@@ -137,7 +137,7 @@ class EGVForPatientByDisplayTime extends FunSuite {
                 list_glucose_record_cassandra(index).Status.equalsIgnoreCase("SensorNoise")
                 )) ||
             (
-              list_glucose_record_cassandra(index).Value < 40 &&
+              list_glucose_record_cassandra(index).Value.get < 40 &&
                 list_glucose_record_cassandra(index).Status.equalsIgnoreCase("Low")
               ) ||
             (((40 to 400) contains list_glucose_record_cassandra(index).Value) &&
@@ -146,7 +146,7 @@ class EGVForPatientByDisplayTime extends FunSuite {
                   list_glucose_record_cassandra(index).Status === ""
                 )) ||
             (
-              list_glucose_record_cassandra(index).Value > 400 &&
+              list_glucose_record_cassandra(index).Value.get > 400 &&
                 list_glucose_record_cassandra(index).Status.equalsIgnoreCase("High")
               ))
         } else{

@@ -23,10 +23,11 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
     */
   def getGlucoseRecordsFromCSV : List[EGVForPatient] = {
     val list_glucose_record = new ListBuffer[EGVForPatient]
-    val post = Utils.postRecords()
+    val post_records = Utils.postRecords()
     val glucose_record_csv = scala.io.Source.fromFile(glucose_record_path)
 
     for (
+      list_post <- post_records;
       list_patient <- Utils.patientRecords();
       line <- glucose_record_csv.getLines().drop(1)
     ) {
@@ -34,18 +35,21 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
       val glucose_record = EGVForPatient(
         PatientId = list_patient.PatientId,
         SystemTime = Utils.stringToDate(cols(0)).get,
-        PostId = post.PostId,
+        PostId = list_post.PostId,
         DisplayTime = Utils.stringToDate(cols(1)).get,
-        IngestionTimestamp = Utils.stringToDate(post.PostedTimestamp).get, // post.postedTimestamp
+        IngestionTimestamp = Utils.stringToDate(list_post.PostedTimestamp).get, // post_records.postedTimestamp
         RateUnits = common.EGVForPatient.RateUnits,
         Source = list_patient.SourceStream,
-        Status = cols(7), //TODO
+        Status = cols(7).flatMap { s => if (s.toString.trim.length == 0) None else Some(s) },
         TransmitterId = cols(2),
         TransmitterTicks = cols(3).toLong,
         Trend = cols(8),
         TrendRate = cols(9).toDouble,
         Units = common.EGVForPatient.Units,
-        Value = cols(6).toInt //TODO
+        Value = cols(6) match {
+        case x if 40 to 400 contains x => Some(x.toInt)
+        case _ => None
+      }
       )
       list_glucose_record += glucose_record
     }
@@ -81,7 +85,7 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
         Trend = row.getString("trend"),
         TrendRate = row.getDouble("trend_rate"),
         Units = row.getString("units"),
-        Value = row.getInt("value")
+        Value = Some(row.getInt("value"))
       )
       list_egv_record += egv_record
     }
@@ -115,7 +119,7 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
         Trend = row.getString("trend"),
         TrendRate = row.getDouble("trend_rate"),
         Units = row.getString("units"),
-        Value = row.getInt("value")
+        Value = Some(row.getInt("value"))
       )
       list_egv_record += egv_record
     }

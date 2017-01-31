@@ -3,8 +3,7 @@ package com.dexcom.utils
 import java.text.ParseException
 import java.util.{Date, UUID}
 
-import com.dexcom.dto.{AlertSetting, DeviceUploadForPatient, Patient, Post}
-import net.liftweb.json.{DefaultFormats, Serialization}
+import com.dexcom.dto.{DeviceUploadForPatient, Patient, Post}
 import com.dexcom.common.Constants._
 import org.joda.time.format.DateTimeFormat
 import com.dexcom.configuration.DexVictoriaConfigurations
@@ -18,7 +17,7 @@ import scala.collection.mutable.ListBuffer
   */
 object Utils extends DexVictoriaConfigurations {
 
-  def stringToDate(dateString : String) : Option[Date]= {
+  def stringToDate(dateString: String): Option[Date] = {
 
     val df = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZ")
 
@@ -27,7 +26,7 @@ object Utils extends DexVictoriaConfigurations {
       val date = temp.toDate
       Some(date)
     } catch {
-      case e : ParseException =>
+      case e: ParseException =>
         e.printStackTrace()
         None
     }
@@ -39,7 +38,7 @@ object Utils extends DexVictoriaConfigurations {
     * @param x is the numeric range of doubles to be formatted
     * @return the list of doubles formattted upto one decimal place
     */
-  def doubleFormatting(x : NumericRange[Double]): List[Double] = {
+  def doubleFormatting(x: NumericRange[Double]): List[Double] = {
     var list = new ListBuffer[Double]
     x.foreach {
       list += new java.math.BigDecimal(_).setScale(1, BigDecimal.RoundingMode.HALF_UP).toDouble
@@ -52,32 +51,31 @@ object Utils extends DexVictoriaConfigurations {
     * Serialize object into json string
     * Deserialize the json string into list[AlertSetting]
     */
-  def getObject(alertVal : String) : List[AlertSetting]= {
+  /*def getObject(alertVal : String) : List[AlertSetting]= {
 
     implicit val format = DefaultFormats
 
     val alertsObj = Serialization.read[List[AlertSetting]](alertVal)
 
     alertsObj
-  }
+  }*/
 
-  def deviceModel : String = {
-    /*val deviceUploadHelper = new DeviceUploadHelper
-    val ordered_settings_record : List[DeviceUploadForPatient] = deviceUploadHelper.getDeviceUploadForPatientFromCSV
+  def deviceModel: String = {
+    val deviceUploadHelper = new DeviceUploadHelper
+    val ordered_settings_record: List[DeviceUploadForPatient] = deviceUploadHelper.getDeviceUploadForPatientFromCSV
       .get
       .sortBy(_.RecordedSystemTime.get)
 
-    val latest_setting_record : Option[DeviceUploadForPatient] = ordered_settings_record.lastOption
+    val latest_setting_record: Option[DeviceUploadForPatient] = ordered_settings_record.lastOption
 
     latest_setting_record match {
       case None => G5
       case Some(setting) =>
         selectDeviceModel(setting.SoftwareNumber, setting.SoftwareVersion)
-    }*/
-  ""
+    }
   }
 
-  def selectDeviceModel(softwareNumber: String, softwareVersion : String): String = {
+  def selectDeviceModel(softwareNumber: String, softwareVersion: String): String = {
     //  In the Device Settings Record, there is a field (VersionNumber) that is a string value that corresponds to the
     //  software version of the receiver.
     //  4.0.1.x = G5
@@ -105,12 +103,12 @@ object Utils extends DexVictoriaConfigurations {
     *
     * @return list of the object patient objects
     */
-  def patientRecords() : List[Patient] = {
+  def patientRecords(): List[Patient] = {
     val list_patient_record = new ListBuffer[Patient]
     val patient_record_csv = scala.io.Source.fromFile(patient_records_path)
-    for(line <- patient_record_csv.getLines().drop(1)) {
+    for (line <- patient_record_csv.getLines().drop(1)) {
       val cols = line.split(Splitter).map(_.trim)
-      val patient_record = Patient (
+      val patient_record = Patient(
         PatientId = UUID.fromString(cols(0)),
         SourceStream = cols(1),
         SequenceNumber = cols(2),
@@ -130,18 +128,27 @@ object Utils extends DexVictoriaConfigurations {
     *
     * @return list of post object
     */
-  def postRecords() : Post = {
-    var post_record: Post = null
+  def postRecords(): List[Post] = {
+    var list_post_record: List[Post] = Nil
     val post_record_csv = scala.io.Source.fromFile(post_path)
     for (line <- post_record_csv.getLines().drop(1)) {
       val cols = line.split(Splitter).map(_.trim)
-      post_record = Post(
+      val post_record = Post(
         PostId = UUID.fromString(cols(0)),
         PostedTimestamp = cols(1)
       )
-
+      list_post_record = post_record :: list_post_record
     }
     post_record_csv.close()
-    post_record
+    list_post_record
+  }
+
+  val serialNumber: String = {
+    this.patientRecords().head.SourceStream match {
+      case "Receiver" => this.patientRecords().head.ReceiverNumber.getOrElse("???") //For one patient record only
+      case "Phone" => "iPhone"
+      case "Phone2" => "Android"
+      case _ => "Unknown source"
+    }
   }
 }

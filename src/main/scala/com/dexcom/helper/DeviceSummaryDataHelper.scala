@@ -1,6 +1,6 @@
 package com.dexcom.helper
 
-import com.dexcom.common.{CassandraQueries, Constants}
+import com.dexcom.common.CassandraQueries
 import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.connection.CassandraConnection
 import com.dexcom.dto._
@@ -20,28 +20,21 @@ class DeviceSummaryDataHelper extends DexVictoriaConfigurations with CassandraQu
   def getDeviceSummaryFromCSV : List[DeviceSummary] = {
 
     val list_device_summary = new ListBuffer[DeviceSummary]
-    val post = postRecords()
+    val post_records = postRecords()
     val device_summary_csv = scala.io.Source.fromFile(device_settings_record_path)
 
     for (
+      list_post <- post_records;
       list_patient <- patientRecords()//;
       //line <- device_summary_csv.getLines().drop(1)
     ){
-      val serialNumber: String = {
-        list_patient.SourceStream match {
-          case "Receiver" => list_patient.ReceiverNumber.getOrElse("???")
-          case "Phone" => "iPhone"
-          case "Phone2" => "Android"
-          case _ => "Unknown source"
-        }
-      }
       //val cols = line.split(Constants.Splitter).map(_.trim)
       val device_summary = DeviceSummary(
         PatientId = list_patient.PatientId,
         Model = deviceModel,
         SerialNumber = serialNumber,
-        CreateDate = stringToDate(post.PostedTimestamp).get, // createDate = post.postedTimestamp
-        LastUpdateDate = stringToDate(post.PostedTimestamp).get //lastUpdateDate = post.postedTimestamp
+        CreateDate = stringToDate(list_post.PostedTimestamp).get, // createDate = post_records.postedTimestamp
+        LastUpdateDate = stringToDate(list_post.PostedTimestamp).get //lastUpdateDate = post_records.postedTimestamp
       )
       list_device_summary += device_summary
     }

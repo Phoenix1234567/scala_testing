@@ -27,30 +27,30 @@ class EGVForPatientBySystemTime extends FunSuite {
       x =>
         assert(x.Value !== null)
         assert(x.Value !== "")
-        assert(x.Value.isInstanceOf[Int])
+        assert(x.Value.get.isInstanceOf[Int])
     }
     list_glucose_record_csv.foreach {
       x =>
         val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
         if(index != -1) {
-          assert(x.Value === list_glucose_record_cassandra(index).Value)
+          assert(x.Value.get === list_glucose_record_cassandra(index).Value.get)
           assert((
-            list_glucose_record_cassandra(index).Value === 0 &&
+            list_glucose_record_cassandra(index).Value.get === 0 &&
               (list_glucose_record_cassandra(index).Status.equalsIgnoreCase("OutOfCalibration") ||
                 list_glucose_record_cassandra(index).Status.equalsIgnoreCase("SensorWarmUp") ||
                 list_glucose_record_cassandra(index).Status.equalsIgnoreCase("SensorNoise")
                 )) ||
             (
-              list_glucose_record_cassandra(index).Value < 40 &&
+              list_glucose_record_cassandra(index).Value.get < 40 &&
                 list_glucose_record_cassandra(index).Status.equalsIgnoreCase("Low")
               ) ||
-            (((40 to 400) contains list_glucose_record_cassandra(index).Value) &&
+            (((40 to 400) contains list_glucose_record_cassandra(index).Value.get) &&
               (
                 list_glucose_record_cassandra(index).Status === null ||
                   list_glucose_record_cassandra(index).Status === ""
                 )) ||
             (
-              list_glucose_record_cassandra(index).Value > 400 &&
+              list_glucose_record_cassandra(index).Value.get > 400 &&
                 list_glucose_record_cassandra(index).Status.equalsIgnoreCase("High")
               ))
         } else {

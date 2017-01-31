@@ -48,17 +48,17 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
     val list_user_event_records = new ListBuffer[UserEventRecord]
 
     val user_event_record_csv = scala.io.Source.fromFile(user_event_path)
-    val post = postRecords()
+    val post_records = postRecords()
 
-    for (patient<-patientRecords();line <- user_event_record_csv.getLines().drop(1)) {
+    for (list_post <- post_records; patient<-patientRecords();line <- user_event_record_csv.getLines().drop(1)) {
       val cols = line.split(Constants.Splitter).map(_.trim)
       val event_record = new UserEventRecord()
         event_record.setPatientID(patient.PatientId)
         event_record.setDisplayTime( stringToDate(cols(3)).get)
       event_record.setName(cols(4))
       event_record.setModel(deviceModel)
-      event_record.setIngestionTimestamp(stringToDate(cols(0)).get)
-      event_record.setPostID(post.PostId)
+      event_record.setIngestionTimestamp(stringToDate(list_post.PostedTimestamp).get)
+      event_record.setPostID(list_post.PostId)
       event_record.setSubType(cols(5))
       event_record.setSystemTime(stringToDate(cols(2)).get)
       event_record.setUnits(cols(7))

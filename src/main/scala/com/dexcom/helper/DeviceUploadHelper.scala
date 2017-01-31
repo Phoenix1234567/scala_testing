@@ -11,25 +11,25 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by gaurav.garg on 23-01-2017.
   */
-object DeviceUploadHelper extends CassandraQueries with App{
+class DeviceUploadHelper extends CassandraQueries {
 
   /**
     * thiss method get the alertsettingsrecord from CSV
     *
     * @return the list of AlertSetting records
     */
-  def getAlertsRecordFromCSV : List[AlertSetting] = {
+  def getAlertsRecordFromCSV: List[AlertSetting] = {
 
     val list_alerts = new ListBuffer[AlertSetting]
     val alerts_record_csv = scala.io.Source.fromFile(alert_settings_record_path)
 
-    for(line <- alerts_record_csv.getLines().drop(1)) {
+    for (line <- alerts_record_csv.getLines().drop(1)) {
       val cols = line.split(Constants.Splitter).map(_.trim)
       val alert_record = AlertSetting(
         name = cols(2),
         value = cols(3).toInt,
-        system_time = cols(0),
-        display_time = cols(1),
+        system_time = stringToDate(cols(0)).get,
+        display_time = stringToDate(cols(1)).get,
         units = units(cols(2)),
         delay = cols(4).toInt,
         snooze = cols(5).toInt,
@@ -63,13 +63,14 @@ object DeviceUploadHelper extends CassandraQueries with App{
     *
     * @return the list of DeviceUploadForPatient records
     */
-  def getDeviceUploadForPatientFromCSV : Option[List[DeviceUploadForPatient]] = {
+  def getDeviceUploadForPatientFromCSV: Option[List[DeviceUploadForPatient]] = {
     val list_device_record = new ListBuffer[DeviceUploadForPatient]
-    val post = postRecords()
+    val post_records = postRecords()
     val device_record_csv = scala.io.Source.fromFile(device_settings_record_path)
 
     try {
       for (
+        list_post <- post_records;
         list_patient <- patientRecords();
         line <- device_record_csv.getLines().drop(1)
       ) {
@@ -77,18 +78,18 @@ object DeviceUploadHelper extends CassandraQueries with App{
         val device_record = DeviceUploadForPatient(
           PatientId = list_patient.PatientId,
           Model = selectDeviceModel(cols(9), cols(10)),
-          DeviceUploadDate = stringToDate(post.PostedTimestamp).get, //TODO: val uploadDate = lastEgvDateOrDefault(manifests.toSeq, post.postedTimestamp)
-          Alerts = getAlertsRecordFromCSV.distinct,
-          DisplayTimeOffset = cols(8).toInt,
-          IngestionTimestamp = stringToDate(post.PostedTimestamp).get,
-          Is24HourMode = cols(4).toBoolean,
-          IsBlindedMode = cols(5).toBoolean,
-          IsMmolDisplayMode = cols(3).toBoolean,
-          Language = cols(2),
-          SerialNumber = list_patient.TransmitterNumber, // as per Uma Doddi and Richard's mail
-          SoftwareNumber = cols(9),
-          SoftwareVersion = cols(10),
-          SystemTimeOffset = cols(7).toInt,
+          DeviceUploadDate = stringToDate(list_post.PostedTimestamp).get, //TODO: val uploadDate = lastEgvDateOrDefault(manifests.toSeq, post_records.postedTimestamp)
+          Alerts = getAlertsRecordFromCSV, //TODO
+          DisplayTimeOffset = cols(8).toInt, //TODO
+          IngestionTimestamp = stringToDate(list_post.PostedTimestamp).get,
+          Is24HourMode = cols(4).toBoolean, //TODO
+          IsBlindedMode = cols(5).toBoolean, //TODO
+          IsMmolDisplayMode = cols(3).toBoolean, //TODO
+          Language = cols(2), //TODO
+          SerialNumber = serialNumber,
+          SoftwareNumber = cols(9), //TODO
+          SoftwareVersion = cols(10), //TODO
+          SystemTimeOffset = cols(7).toInt, //TODO
           TransmitterId = cols(6),
           Udi = None,
           RecordedSystemTime = stringToDate(cols(0))
@@ -99,7 +100,7 @@ object DeviceUploadHelper extends CassandraQueries with App{
 
       Some(list_device_record.toList)
     } catch {
-      case e : Exception =>
+      case e: Exception =>
         e.printStackTrace()
         None
     }
@@ -110,21 +111,37 @@ object DeviceUploadHelper extends CassandraQueries with App{
     *
     * @return the list of records of device_upload_for_patient
     */
-  def getDeviceUploadForPatientFromCassandra : List[DeviceUploadForPatient] = {
+  def getDeviceUploadForPatientFromCassandra: List[DeviceUploadForPatient] = {
     val list_device_upload_record = new ListBuffer[DeviceUploadForPatient]
+    var list_alerts: List[AlertSetting] = Nil
     val cassandra_connection = new CassandraConnection
     val session = cassandra_connection.getConnection // get cassandra connection
 
     val resultSet = session.execute(GET_DEVICE_UPLOAD_FOR_PATIENT)
-    while(!resultSet.isExhausted) {
+    while (!resultSet.isExhausted) {
       val row = resultSet.one()
-//val test = row.getList[UDTValue]("alerts", classOf[UDTValue]) TODO
+      val alerts = row.getList[UDTValue]("alerts", classOf[UDTValue])
+      val iterator = alerts.iterator()
+      while (iterator.hasNext) {
+        val row_alerts = iterator.next()
+        val alerts = AlertSetting(
+          name = row_alerts.getString("name"),
+          value = row_alerts.getInt("value"),
+          system_time = row_alerts.getTimestamp("system_time"),
+          display_time = row_alerts.getTimestamp("display_time"),
+          units = row_alerts.getString("units"),
+          delay = row_alerts.getInt("delay"),
+          snooze = row_alerts.getInt("snooze"),
+          enabled = row_alerts.getBool("enabled")
+        )
+        list_alerts = alerts :: list_alerts
+      }
 
-      val device_upload_record = DeviceUploadForPatient (
+      val device_upload_record = DeviceUploadForPatient(
         PatientId = row.getUUID("patient_id"),
         Model = row.getString("model"),
         DeviceUploadDate = row.getTimestamp("device_upload_date"),
-        Alerts = getObject(row.getString("system.tojson(alerts)")),
+        Alerts = list_alerts, //getObject(row.getString("system.tojson(alerts)")),
         DisplayTimeOffset = row.getInt("display_time_offset"),
         IngestionTimestamp = row.getTimestamp("ingestion_timestamp"),
         Is24HourMode = row.getBool("is_24_hour_mode"),
@@ -141,9 +158,7 @@ object DeviceUploadHelper extends CassandraQueries with App{
       )
       list_device_upload_record += device_upload_record
     }
-    cassandra_connection.closeConnection()  //close cassandra connection
+    cassandra_connection.closeConnection() //close cassandra connection
     list_device_upload_record.toList
   }
-
-  this.getDeviceUploadForPatientFromCassandra
 }

@@ -19,5 +19,5 @@ case class EGVForPatient(
                         Trend : String,
                         TrendRate : Double,
                         Units : String,
-                        Value : Int
+                        Value : Option[Int]
                         )
