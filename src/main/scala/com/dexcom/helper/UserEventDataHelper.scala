@@ -98,7 +98,7 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
     val index = destinationDataList.indexWhere {
       y =>
         y.PatientID.equals(sourceData.PatientID) &&
-          y.SystemTime.equals(sourceData.DisplayTime) &&
+          y.DisplayTime.equals(sourceData.DisplayTime) &&
           y.PostID.equals(sourceData.PostID) &&
           y.Model.equals(sourceData.Model)
     }

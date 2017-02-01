@@ -23,7 +23,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
     cassandraConnection = new CassandraConnection()
     userEventDataHelper = new UserEventDataHelper(cassandraConnection.getConnection)
     recordsFromCassandra = userEventDataHelper.getRecordFromCassandra()
-    //recordsFromCSV = userEventDataHelper.getRecordsFromCSV()
+    recordsFromCSV = userEventDataHelper.getRecordsFromCSV
     initNameAndSubtypeMapping
 
   }

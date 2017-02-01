@@ -25,7 +25,7 @@ object Utils extends DexVictoriaConfigurations {
       case _ => this.postRecords.filter(_.PostId == postId).head.PostedTimestamp
     }
 
-
+//println(this.stringToDate("2014-05-23T20:06:17.1592279Z".substring(0, 11)+ "2014-05-23T20:06:17.1592279Z".substring(11).replaceAll("[0-9]", "0")))
   def stringToDate(dateString: String): Option[Date] = {
 
     val df = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZ")

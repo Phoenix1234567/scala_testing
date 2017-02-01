@@ -199,7 +199,7 @@ class EventForPatientByDisplayTime extends FunSuite with CassandraQueries with B
 
     recordsFromCSV.foreach {
       x =>
-        val index = userEventDataHelper.getIndexForSystemTime(x, recordsFromCassandra)
+        val index = userEventDataHelper.getIndexForDisplayTime(x, recordsFromCassandra)
         if (index != -1)
           assert(x.SystemTime === recordsFromCassandra(index).SystemTime)
         else fail(s"Record not found : $x")
