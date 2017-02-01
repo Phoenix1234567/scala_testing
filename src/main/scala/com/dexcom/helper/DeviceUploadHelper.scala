@@ -160,4 +160,13 @@ class DeviceUploadHelper extends CassandraQueries {
     cassandra_connection.closeConnection() //close cassandra connection
     list_device_upload_record.toList
   }
+  def getIndexForDeviceUpload(sourceData : DeviceUploadForPatient, destinationDataList : List[DeviceUploadForPatient]) : Int = {
+    val index = destinationDataList.indexWhere {
+      y =>
+        y.PatientId.equals(sourceData.PatientId) &&
+          y.Model.equals(sourceData.Model) &&
+          y.DeviceUploadDate.equals(sourceData.DeviceUploadDate) //check mapping of deviceUploadDate
+    }
+    index
+  }
 }

@@ -14,13 +14,9 @@ class DeviceUploadForPatient extends FunSuite {
   val deviceUploadTestCase = new DeviceUploadHelper
   val list_device_upload_cassandra = deviceUploadTestCase.getDeviceUploadForPatientFromCassandra
   val list_device_upload_csv = deviceUploadTestCase.getDeviceUploadForPatientFromCSV.get
-
-  println(s"cassandra --- $list_device_upload_cassandra")
-  println(s"CSV --- $list_device_upload_csv")
-
-
-
-/*  test("TC_318 --~> should verify TransmitterId of the DeviceUploadForPatient in cassandra is populating properly") {
+    println(s"CSV---$list_device_upload_csv ")
+    println(s"-----Cassandra   $list_device_upload_cassandra ")
+    test("TC_318 --~> should verify TransmitterId of the DeviceUploadForPatient in cassandra is populating properly") {
     //Verify the results
     list_device_upload_cassandra.foreach {
       x =>
@@ -39,8 +35,8 @@ class DeviceUploadForPatient extends FunSuite {
           fail(s"Record not found: $x")
 
     }
-  }*/
-  /*
+  }
+
     test("TC_319 --~> should verify Model of the DeviceUploadForPatient in cassandra is populating properly") {
       //verify the results
       list_device_upload_cassandra.foreach {
@@ -50,11 +46,16 @@ class DeviceUploadForPatient extends FunSuite {
           assert(x.Model.isInstanceOf[String])
       }
       list_device_upload_csv.foreach {
-        //implement the mapping of model //TODO
+
         x =>
           val index = deviceUploadTestCase.getIndexForDeviceUpload(x, list_device_upload_cassandra)
-          assert(x.Model === list_device_upload_cassandra(index).Model)
-          assert(list_device_upload_cassandra(index).Model === "G5" || list_device_upload_cassandra(index).Model === "G4")
+          if(index != -1) {
+            assert(x.Model === list_device_upload_cassandra(index).Model)
+            assert(list_device_upload_cassandra(index).Model === "G5" || list_device_upload_cassandra(index).Model === "G4")
+          }
+          else
+            fail(s"Record not found: $x")
+
       }
     }
 
@@ -63,12 +64,17 @@ class DeviceUploadForPatient extends FunSuite {
       list_device_upload_cassandra.foreach {
         x =>
           assert(x.IsMmolDisplayMode !== null)
+          assert(x.IsMmolDisplayMode !== "")
           assert(x.IsMmolDisplayMode.isInstanceOf[Boolean])
       }
       list_device_upload_csv.foreach {
         x =>
           val index = deviceUploadTestCase.getIndexForDeviceUpload(x, list_device_upload_cassandra)
+          if(index != -1)
           assert(x.IsMmolDisplayMode === list_device_upload_cassandra(index).IsMmolDisplayMode)
+          else
+            fail(s"Record not found: $x")
+
       }
     }
 
@@ -77,12 +83,17 @@ class DeviceUploadForPatient extends FunSuite {
       list_device_upload_cassandra.foreach {
         x =>
           assert(x.IsBlindedMode !== null)
+          assert(x.IsBlindedMode !== "")
           assert(x.IsBlindedMode.isInstanceOf[Boolean])
       }
       list_device_upload_csv.foreach {
         x =>
           val index = deviceUploadTestCase.getIndexForDeviceUpload(x, list_device_upload_cassandra)
+          if(index != -1)
           assert(x.IsBlindedMode === list_device_upload_cassandra(index).IsBlindedMode)
+          else
+            fail(s"Record not found: $x")
+
       }
     }
 
@@ -91,12 +102,17 @@ class DeviceUploadForPatient extends FunSuite {
       list_device_upload_cassandra.foreach {
         x =>
           assert(x.Is24HourMode !== null)
+          assert(x.Is24HourMode !== "")
           assert(x.Is24HourMode.isInstanceOf[Boolean])
       }
       list_device_upload_csv.foreach {
         x =>
           val index = deviceUploadTestCase.getIndexForDeviceUpload(x, list_device_upload_cassandra)
+          if(index != -1)
           assert(x.Is24HourMode === list_device_upload_cassandra(index).Is24HourMode)
+          else
+            fail(s"Record not found: $x")
+
       }
     }
 
@@ -111,7 +127,11 @@ class DeviceUploadForPatient extends FunSuite {
       list_device_upload_csv.foreach {
         x =>
           val index = deviceUploadTestCase.getIndexForDeviceUpload(x, list_device_upload_cassandra)
+          if(index != -1)
           assert(x.Language === list_device_upload_cassandra(index).Language)
+          else
+            fail(s"Record not found: $x")
+
       }
     }
 
@@ -126,7 +146,11 @@ class DeviceUploadForPatient extends FunSuite {
       list_device_upload_csv.foreach {
         x =>
           val index = deviceUploadTestCase.getIndexForDeviceUpload(x, list_device_upload_cassandra)
+          if(index != -1)
           assert(x.SoftwareVersion === list_device_upload_cassandra(index).SoftwareVersion)
+          else
+            fail(s"Record not found: $x")
+
       }
     }
 
@@ -140,7 +164,11 @@ class DeviceUploadForPatient extends FunSuite {
       list_device_upload_csv.foreach {
         x =>
           val index = deviceUploadTestCase.getIndexForDeviceUpload(x, list_device_upload_cassandra)
+          if(index != -1)
           assert(x.DisplayTimeOffset === list_device_upload_cassandra(index).DisplayTimeOffset)
+          else
+            fail(s"Record not found: $x")
+
       }
     }
 
@@ -154,7 +182,10 @@ class DeviceUploadForPatient extends FunSuite {
       list_device_upload_csv.foreach {
         x =>
           val index = deviceUploadTestCase.getIndexForDeviceUpload(x, list_device_upload_cassandra)
+          if(index != -1)
           assert(x.SystemTimeOffset === list_device_upload_cassandra(index).SystemTimeOffset)
+          else
+            fail(s"Record not found: $x")
       }
     }
 
@@ -168,7 +199,11 @@ class DeviceUploadForPatient extends FunSuite {
       list_device_upload_csv.foreach {
         x =>
           val index = deviceUploadTestCase.getIndexForDeviceUpload(x, list_device_upload_cassandra)
+          if(index != -1)
           assert(x.SoftwareNumber === list_device_upload_cassandra(index).SoftwareNumber)
+          else
+            fail(s"Record not found: $x")
+
       }
     }
 
@@ -182,7 +217,11 @@ class DeviceUploadForPatient extends FunSuite {
       list_device_upload_csv.foreach {
         x =>
           val index = deviceUploadTestCase.getIndexForDeviceUpload(x, list_device_upload_cassandra)
+          if(index != -1)
           assert(x.SerialNumber === list_device_upload_cassandra(index).SerialNumber)
+          else
+            fail(s"Record not found: $x")
+
       }
     }
 
@@ -197,12 +236,16 @@ class DeviceUploadForPatient extends FunSuite {
       list_device_upload_csv.foreach {
         x =>
           val index = deviceUploadTestCase.getIndexForDeviceUpload(x, list_device_upload_cassandra)
+          if(index != -1)
           assert(x.PatientId === list_device_upload_cassandra(index).PatientId)
+          else
+            fail(s"Record not found: $x")
       }
     }
 
+    //DeviceUploadDate - PK
     test("TC_396 --~> should verify DeviceUploadDate of the DeviceUploadForPatient in cassandra is populating properly") {
-      //verify the results
+      //verify the results //need to check the mapping of device_upload_date from code
       list_device_upload_cassandra.foreach {
         x =>
           assert(x.DeviceUploadDate !== null)
@@ -212,7 +255,10 @@ class DeviceUploadForPatient extends FunSuite {
       list_device_upload_csv.foreach {
         x =>
           val index = deviceUploadTestCase.getIndexForDeviceUpload(x, list_device_upload_cassandra)
+          if(index != -1)
           assert(x.DeviceUploadDate === list_device_upload_cassandra(index).DeviceUploadDate)
+          else
+            fail(s"Record not found: $x")
       }
 
     }
@@ -228,7 +274,11 @@ class DeviceUploadForPatient extends FunSuite {
       list_device_upload_csv.foreach{
         x=>
           val index = deviceUploadTestCase.getIndexForDeviceUpload(x,list_device_upload_cassandra)
+          if(index != -1)
           assert(x.IngestionTimestamp === list_device_upload_cassandra(index).IngestionTimestamp)
+          else
+            fail(s"Record not found: $x")
+
       }
     }
 
@@ -236,7 +286,7 @@ class DeviceUploadForPatient extends FunSuite {
       //verify the results
       list_device_upload_cassandra.foreach {
         x =>
-          assert(x.Udi === null)
+          assert(x.Udi.get == null)
          // assert(x.Udi.isInstanceOf[String])
       }
     }
@@ -249,6 +299,6 @@ class DeviceUploadForPatient extends FunSuite {
         }
       }
     }*/
-  */
+
 
 }
