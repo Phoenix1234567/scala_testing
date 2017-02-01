@@ -66,7 +66,7 @@ class DeviceUploadHelper extends CassandraQueries {
     */
   def getDeviceUploadForPatientFromCSV: Option[List[DeviceUploadForPatient]] = {
     val list_device_record = new ListBuffer[DeviceUploadForPatient]
-    val post_records = postRecords()
+    val post_records = postRecords
     val device_record_csv = scala.io.Source.fromFile(device_settings_record_path)
 
     try {
@@ -79,10 +79,10 @@ class DeviceUploadHelper extends CassandraQueries {
         val device_record = DeviceUploadForPatient(
           PatientId = list_patient.PatientId,
           Model = selectDeviceModel(cols(9), cols(10)),
-          DeviceUploadDate = stringToDate(list_post.PostedTimestamp).get, //TODO: val uploadDate = lastEgvDateOrDefault(manifests.toSeq, post_records.postedTimestamp)
-          Alerts = getAlertsRecordFromCSV, //TODO
+          DeviceUploadDate = uploadDate(list_post.PostId), //val uploadDate = lastEgvDateOrDefault(manifests.toSeq, post_records.postedTimestamp)
+          Alerts = getAlertsRecordFromCSV,
           DisplayTimeOffset = cols(8).toInt, //TODO
-          IngestionTimestamp = stringToDate(list_post.PostedTimestamp).get,
+          IngestionTimestamp = list_post.PostedTimestamp,
           Is24HourMode = cols(4).toBoolean, //TODO
           IsBlindedMode = cols(5).toBoolean, //TODO
           IsMmolDisplayMode = cols(3).toBoolean, //TODO
@@ -101,9 +101,7 @@ class DeviceUploadHelper extends CassandraQueries {
 
       Some(list_device_record.toList)
     } catch {
-      case e: Exception =>
-        e.printStackTrace()
-        None
+      case e: Exception => None
     }
   }
 

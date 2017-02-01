@@ -15,7 +15,7 @@ class EGVForPatientByDisplayTime extends FunSuite {
   //initiate
   val glucoseRecordTestCase = new GlucoseDataHelper
   val list_glucose_record_cassandra = glucoseRecordTestCase.getEGVForPatientByDisplayTimeRecordsFromCassandra
-  val list_glucose_record_csv = glucoseRecordTestCase.getGlucoseRecordsFromCSV
+  val list_glucose_record_csv = glucoseRecordTestCase.getGlucoseRecordsFromCSV.get
 
   test("TC_349 --~> should verify DisplayTime of the EGVForPatientByDisplayTime in cassandra is populating properly") {
 

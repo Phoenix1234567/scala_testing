@@ -6,7 +6,7 @@ import java.util.{Date, UUID}
 import com.dexcom.common.Constants._
 import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.dto.{DeviceUploadForPatient, Patient, Post}
-import com.dexcom.helper.DeviceUploadHelper
+import com.dexcom.helper.{DeviceUploadHelper, GlucoseDataHelper}
 import org.joda.time.format.DateTimeFormat
 
 import scala.collection.immutable.NumericRange
@@ -16,6 +16,15 @@ import scala.collection.mutable.ListBuffer
   * Created by sarvaraj on 13/01/17.
   */
 object Utils extends DexVictoriaConfigurations {
+
+  val glucoseDataHelper = new GlucoseDataHelper
+
+  def uploadDate(postId: UUID): Date =
+    glucoseDataHelper.getGlucoseRecordsFromCSV match {
+      case Some(data) => data.filter(_.PostId == postId).map(_.SystemTime).min
+      case _ => this.postRecords.filter(_.PostId == postId).head.PostedTimestamp
+    }
+
 
   def stringToDate(dateString: String): Option[Date] = {
 
@@ -50,11 +59,11 @@ object Utils extends DexVictoriaConfigurations {
 
   def deviceModel: String = {
     val deviceUploadHelper = new DeviceUploadHelper
-    val ordered_settings_record: List[DeviceUploadForPatient] = deviceUploadHelper.getDeviceUploadForPatientFromCSV
-      .get
-      .sortBy(_.RecordedSystemTime.get)
-
-    val latest_setting_record: Option[DeviceUploadForPatient] = ordered_settings_record.lastOption
+    val latest_setting_record: Option[DeviceUploadForPatient] =
+      deviceUploadHelper.getDeviceUploadForPatientFromCSV match {
+        case Some(data) => data.sortBy(_.RecordedSystemTime.get).lastOption
+        case _ => None
+      }
 
     latest_setting_record match {
       case None => G5
@@ -116,14 +125,14 @@ object Utils extends DexVictoriaConfigurations {
     *
     * @return list of post object
     */
-  def postRecords(): List[Post] = {
+  def postRecords: List[Post] = {
     var list_post_record: List[Post] = Nil
     val post_record_csv = scala.io.Source.fromFile(post_path)
     for (line <- post_record_csv.getLines().drop(1)) {
       val cols = line.split(Splitter).map(_.trim)
       val post_record = Post(
         PostId = UUID.fromString(cols(0)),
-        PostedTimestamp = cols(1)
+        PostedTimestamp = stringToDate(cols(1)).get
       )
       list_post_record = post_record :: list_post_record
     }

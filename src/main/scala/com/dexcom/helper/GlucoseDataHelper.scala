@@ -22,9 +22,9 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
     *
     * @return the list of EGVRecords
     */
-  def getGlucoseRecordsFromCSV: List[EGVForPatient] = {
+  def getGlucoseRecordsFromCSV: Option[List[EGVForPatient]] = {
     val list_glucose_record = new ListBuffer[EGVForPatient]
-    val post_records = Utils.postRecords()
+    val post_records = Utils.postRecords
     val glucose_record_csv = scala.io.Source.fromFile(glucose_record_path)
 
     for (
@@ -38,7 +38,7 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
         SystemTime = Utils.stringToDate(cols(0)).get,
         PostId = list_post.PostId,
         DisplayTime = Utils.stringToDate(cols(1)).get,
-        IngestionTimestamp = Utils.stringToDate(list_post.PostedTimestamp).get, // post_records.postedTimestamp
+        IngestionTimestamp = list_post.PostedTimestamp, // post_records.postedTimestamp
         RateUnits = common.EGVForPatient.RateUnits,
         Source = list_patient.SourceStream,
         Status = cols(7).flatMap { s => if (s.toString.trim.length == 0) None else Some(s) },
@@ -56,7 +56,7 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
     }
     glucose_record_csv.close()
 
-    list_glucose_record.toList
+    Some(list_glucose_record.toList)
   }
 
   /**

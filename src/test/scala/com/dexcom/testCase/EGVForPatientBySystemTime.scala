@@ -19,7 +19,7 @@ class EGVForPatientBySystemTime extends FunSuite {
   val list_glucose_record_cassandra = glucoseRecordTestCase.getEGVForPatientBySystemTimeRecordsFromCassandra
 
   //getting data from CSV as list
-  val list_glucose_record_csv = glucoseRecordTestCase.getGlucoseRecordsFromCSV
+  val list_glucose_record_csv = glucoseRecordTestCase.getGlucoseRecordsFromCSV.get
 
   test("TC_360 --~> should verify Value of the EGVForPatientBySystemTime in cassandra is populating properly") {
     //verify the results

@@ -21,7 +21,7 @@ class DeviceSummaryDataHelper extends DexVictoriaConfigurations with CassandraQu
   def getDeviceSummaryFromCSV: List[DeviceSummary] = {
 
     val list_device_summary = new ListBuffer[DeviceSummary]
-    val post_records = postRecords()
+    val post_records = postRecords
     val device_summary_csv = scala.io.Source.fromFile(device_settings_record_path)
 
     for (
@@ -34,8 +34,8 @@ class DeviceSummaryDataHelper extends DexVictoriaConfigurations with CassandraQu
         PatientId = list_patient.PatientId,
         Model = deviceModel,
         SerialNumber = serialNumber,
-        CreateDate = stringToDate(list_post.PostedTimestamp).get, // createDate = post_records.postedTimestamp
-        LastUpdateDate = stringToDate(list_post.PostedTimestamp).get //lastUpdateDate = post_records.postedTimestamp
+        CreateDate = list_post.PostedTimestamp, // createDate = post_records.postedTimestamp
+        LastUpdateDate = list_post.PostedTimestamp //lastUpdateDate = post_records.postedTimestamp
       )
       list_device_summary += device_summary
     }
