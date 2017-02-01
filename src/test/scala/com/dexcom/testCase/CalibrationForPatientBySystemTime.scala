@@ -189,7 +189,7 @@ class CalibrationForPatientBySystemTime extends FunSuite {
       x =>
         val index = meterRecordTestCase.getIndexForSystemTime(x, list_meter_record_cassandra)
         if (index != -1) {
-          assert(x.SystemTime === list_meter_record_cassandra(index).IngestionTimestamp) //check for the mapping of IngestionTimestamp,
+          assert(x.IngestionTimestamp === list_meter_record_cassandra(index).IngestionTimestamp) //check for the mapping of IngestionTimestamp,
           // if it is mapped to System time or not
         }
         else {

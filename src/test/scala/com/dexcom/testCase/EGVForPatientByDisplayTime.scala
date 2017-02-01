@@ -123,7 +123,7 @@ class EGVForPatientByDisplayTime extends FunSuite {
       x =>
         assert(x.Value !== null)
         assert(x.Value !== "")
-        assert(x.Value.isInstanceOf[Int])
+        assert(x.Value.get.isInstanceOf[Int])
     }
     list_glucose_record_csv.foreach {
       x =>
@@ -360,7 +360,7 @@ class EGVForPatientByDisplayTime extends FunSuite {
       x =>
         val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
         if (index != -1) {
-          assert(x.DisplayTime === list_glucose_record_cassandra(index).IngestionTimestamp)
+          assert(x.IngestionTimestamp === list_glucose_record_cassandra(index).IngestionTimestamp)
         } else {
           fail(s"Record not found : $x")
         }

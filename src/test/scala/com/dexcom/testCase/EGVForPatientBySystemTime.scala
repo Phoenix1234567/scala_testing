@@ -33,7 +33,7 @@ class EGVForPatientBySystemTime extends FunSuite {
       x =>
         val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
         if (index != -1) {
-          assert(x.Value.get === list_glucose_record_cassandra(index).Value.get)
+          assert(x.Value === list_glucose_record_cassandra(index).Value)
           assert((
             list_glucose_record_cassandra(index).Value.get === 0 &&
               (list_glucose_record_cassandra(index).Status.equalsIgnoreCase("OutOfCalibration") ||
@@ -314,7 +314,7 @@ class EGVForPatientBySystemTime extends FunSuite {
       x =>
         val index = glucoseRecordTestCase.getIndexForSystemTime(x, list_glucose_record_cassandra)
         if (index != -1) {
-          assert(x.DisplayTime === list_glucose_record_cassandra(index).IngestionTimestamp)
+          assert(x.IngestionTimestamp === list_glucose_record_cassandra(index).IngestionTimestamp)
         } else {
           fail(s"Record not found : $x")
         }
