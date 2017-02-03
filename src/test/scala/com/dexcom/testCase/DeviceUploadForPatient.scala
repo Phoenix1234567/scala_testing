@@ -14,8 +14,7 @@ class DeviceUploadForPatient extends FunSuite {
   val deviceUploadTestCase = new DeviceUploadHelper
   val list_device_upload_cassandra = deviceUploadTestCase.getDeviceUploadForPatientFromCassandra
   val list_device_upload_csv = deviceUploadTestCase.getDeviceUploadForPatientFromCSV.get
-    println(s"CSV---$list_device_upload_csv ")
-    println(s"-----Cassandra   $list_device_upload_cassandra ")
+
     test("TC_318 --~> should verify TransmitterId of the DeviceUploadForPatient in cassandra is populating properly") {
     //Verify the results
     list_device_upload_cassandra.foreach {
@@ -243,7 +242,6 @@ class DeviceUploadForPatient extends FunSuite {
       }
     }
 
-    //DeviceUploadDate - PK
     test("TC_396 --~> should verify DeviceUploadDate of the DeviceUploadForPatient in cassandra is populating properly") {
       //verify the results //need to check the mapping of device_upload_date from code
       list_device_upload_cassandra.foreach {
@@ -291,14 +289,44 @@ class DeviceUploadForPatient extends FunSuite {
       }
     }
 
-    /*test("TC_399 --~> should verify alerts of the DeviceUploadForPatient in cassandra is populating properly"){
-      for( device_records <- list_device_upload_csv) {
-        for(alerts_record <- device_records.Alerts) {
-          //verify name in alerts column
-          assert(alerts_record.name !== null && alerts_record.name != "" && alerts_record.name.isInstanceOf[String])
+    test("TC_399 --~> should verify alerts of the DeviceUploadForPatient in cassandra is populating properly") {
+      //verify the results
+      for (device_records <- list_device_upload_cassandra) {
+        for (alerts_record <- device_records.Alerts) {
+
+          assert(alerts_record.name != null && alerts_record.name != "" && alerts_record.name.isInstanceOf[String])
+          assert(alerts_record.value != null && alerts_record.value != "" && alerts_record.value.isInstanceOf[Int])
+          assert(alerts_record.system_time != null && alerts_record.system_time != "" && alerts_record.system_time.isInstanceOf[Date])
+          assert(alerts_record.display_time != null && alerts_record.display_time != "" && alerts_record.display_time.isInstanceOf[Date])
+          assert(alerts_record.units != null && alerts_record.units != "" && alerts_record.units.isInstanceOf[String])
+          assert(alerts_record.delay != null && alerts_record.delay != "" && alerts_record.delay.isInstanceOf[Int])
+          assert(alerts_record.snooze != null && alerts_record.snooze != "" && alerts_record.snooze.isInstanceOf[Int])
+          assert(alerts_record.enabled != null && alerts_record.enabled != "" && alerts_record.enabled.isInstanceOf[Boolean])
         }
       }
-    }*/
+      list_device_upload_csv.foreach {
+        x =>
+
+            val index = deviceUploadTestCase.getIndexForDeviceUpload(x, list_device_upload_cassandra)
+            if (index != -1) {
+              for (alerts_csv <- x.Alerts; alerts_cassandra <- list_device_upload_cassandra(index).Alerts) {
+
+                assert(alerts_csv.name === alerts_cassandra.name)
+                assert(alerts_csv.value === alerts_cassandra.value)
+                assert(alerts_csv.system_time === alerts_cassandra.system_time)
+                assert(alerts_csv.display_time === alerts_cassandra.display_time)
+                assert(alerts_csv.units === alerts_cassandra.units)
+                assert(alerts_csv.delay === alerts_cassandra.delay)
+                assert(alerts_csv.snooze === alerts_cassandra.snooze)
+                assert(alerts_csv.enabled === alerts_cassandra.enabled)
+
+                }
+            }
+            else fail(s"Record not found: $x")
+          }
+      }
+
+
 
 
 }
