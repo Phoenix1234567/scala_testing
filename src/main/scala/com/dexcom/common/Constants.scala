@@ -5,22 +5,23 @@ package com.dexcom.common
   */
 object Constants {
   val Splitter = ","
-  val Glucose = "Glucose"
-  val DeviceSummary = "DeviceSummary"
-  val DeviceUploadForPatient = "DeviceUploadForPatient"
-  val Meter = "Meter"
-  val UserEvent = "UserEvent"
+ // val Glucose = "Glucose"
+ // val DeviceSummary = "DeviceSummary"
+ //val DeviceUploadForPatient = "DeviceUploadForPatient"
+ //  val Meter = "Meter"
+ // val UserEvent = "UserEvent"
   val G5 = "G5"
   val G4 = "G4"
   val ShareDirect = "ShareDirect"
   val DefaultDeviceModel = "G5"
 }
 
-object EGVForPatient {
+/*object EGVForPatient {
   val RateUnits = "mg/dL/min"
   val Units = "mg/dL"
-}
+}*/
 
+/*
 object MeterRecord {
   val Units = "mg/dL"
-}
+}*/

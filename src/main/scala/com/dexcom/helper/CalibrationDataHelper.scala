@@ -4,9 +4,9 @@ package com.dexcom.helper
 import com.dexcom.common.{CassandraQueries, Constants}
 import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.connection.CassandraConnection
+import com.dexcom.dto
 import com.dexcom.dto._
 import com.dexcom.utils.Utils._
-import com.dexcom.{common, dto}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ListBuffer
@@ -37,7 +37,7 @@ class CalibrationDataHelper extends DexVictoriaConfigurations with CassandraQuer
         DisplayTime = stringToDate(cols(5)).get,
         TransmitterId = cols(2),
         IngestionTimestamp = list_post.PostedTimestamp,
-        Units = common.MeterRecord.Units,
+        Units = displayMode,
         Value = cols(6).toInt,
         EntryType = cols(7),
         Model = deviceModel

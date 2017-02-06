@@ -10,7 +10,6 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.1.8", //logging
   "org.scalatest" % "scalatest_2.11" % "3.2.0-SNAP1" % "test", // for scalaTest testing framework
   "joda-time" % "joda-time" % "2.9.7" //for time parsing
-
 )
 
 

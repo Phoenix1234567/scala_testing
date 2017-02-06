@@ -8,6 +8,7 @@ import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.dto.{DeviceUploadForPatient, Patient, Post}
 import com.dexcom.helper.{DeviceUploadHelper, GlucoseDataHelper}
 import org.joda.time.format.DateTimeFormat
+import org.joda.time.{DateTime, DateTimeZone}
 
 import scala.collection.immutable.NumericRange
 import scala.collection.mutable.ListBuffer
@@ -19,13 +20,14 @@ object Utils extends DexVictoriaConfigurations {
 
   val glucoseDataHelper = new GlucoseDataHelper
 
-  def uploadDate(postId: UUID): Date =
+  def uploadDate(postId: UUID): DateTime =
     glucoseDataHelper.getGlucoseRecordsFromCSV match {
-      case Some(data) => data.filter(_.PostId == postId).map(_.SystemTime).min
-      case _ => this.postRecords.filter(_.PostId == postId).head.PostedTimestamp
+      case Some(data) =>
+        new DateTime(data.filter(_.PostId == postId).map(_.SystemTime).min).toDateTime(DateTimeZone.UTC)
+      case _ => new DateTime(this.postRecords.filter(_.PostId == postId).head.PostedTimestamp).toDateTime(DateTimeZone.UTC)
     }
 
-//println(this.stringToDate("2014-05-23T20:06:17.1592279Z".substring(0, 11)+ "2014-05-23T20:06:17.1592279Z".substring(11).replaceAll("[0-9]", "0")))
+  //println(this.stringToDate("2014-05-23T20:06:17.1592279Z".substring(0, 11)+ "2014-05-23T20:06:17.1592279Z".substring(11).replaceAll("[0-9]", "0")))
   def stringToDate(dateString: String): Option[Date] = {
 
     val df = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZ")
@@ -39,6 +41,13 @@ object Utils extends DexVictoriaConfigurations {
         e.printStackTrace()
         None
     }
+  }
+
+  def formatDate(dateString: String): String = {
+    val df = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+    val df2 = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val temp2 = df.parseLocalDate(dateString)
+    df2.print(temp2)
   }
 
   /**
@@ -56,16 +65,23 @@ object Utils extends DexVictoriaConfigurations {
 
   }
 
+  val deviceUploadHelper = new DeviceUploadHelper
+  val latestDeviceSettings: Option[DeviceUploadForPatient] =
+    deviceUploadHelper.getDeviceUploadForPatientFromCSV match {
+      case Some(data) => data.sortBy(_.RecordedSystemTime.get).lastOption
+      case _ => None
+    }
+
+  def displayMode: String = {
+    latestDeviceSettings match {
+      case Some(data) =>
+        if (data.IsMmolDisplayMode) "mmol/L" else "mg/dL"
+      case _ => "mg/dL"
+    } //.fold("mg/dL")(rec => if (rec.IsMmolDisplayMode) "mmol/L" else "mg/dL")
+  }
 
   def deviceModel: String = {
-    val deviceUploadHelper = new DeviceUploadHelper
-    val latest_setting_record: Option[DeviceUploadForPatient] =
-      deviceUploadHelper.getDeviceUploadForPatientFromCSV match {
-        case Some(data) => data.sortBy(_.RecordedSystemTime.get).lastOption
-        case _ => None
-      }
-
-    latest_setting_record match {
+    latestDeviceSettings match {
       case None => G5
       case Some(setting) =>
         selectDeviceModel(setting.SoftwareNumber, setting.SoftwareVersion)

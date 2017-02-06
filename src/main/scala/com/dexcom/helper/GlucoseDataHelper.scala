@@ -1,11 +1,10 @@
 package com.dexcom.helper
 
-import com.dexcom.common
 import com.dexcom.common.{CassandraQueries, Constants}
 import com.dexcom.configuration.DexVictoriaConfigurations
 import com.dexcom.connection.CassandraConnection
 import com.dexcom.dto._
-import com.dexcom.utils.Utils
+import com.dexcom.utils.Utils._
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ListBuffer
@@ -17,6 +16,9 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
 
   val logger = LoggerFactory.getLogger("GlucoseHelper")
 
+  val units = displayMode
+  val rateUnits = units + "/min"
+
   /**
     * this method fetch data from CSV files
     *
@@ -24,29 +26,29 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
     */
   def getGlucoseRecordsFromCSV: Option[List[EGVForPatient]] = {
     val list_glucose_record = new ListBuffer[EGVForPatient]
-    val post_records = Utils.postRecords
+    val post_records = postRecords
     val glucose_record_csv = scala.io.Source.fromFile(glucose_record_path)
 
     for (
       list_post <- post_records;
-      list_patient <- Utils.patientRecords();
+      list_patient <- patientRecords();
       line <- glucose_record_csv.getLines().drop(1)
     ) {
       val cols = line.split(Constants.Splitter).map(_.trim)
       val glucose_record = EGVForPatient(
         PatientId = list_patient.PatientId,
-        SystemTime = Utils.stringToDate(cols(0)).get,
+        SystemTime = stringToDate(cols(0)).get,
         PostId = list_post.PostId,
-        DisplayTime = Utils.stringToDate(cols(1)).get,
+        DisplayTime = stringToDate(cols(1)).get,
         IngestionTimestamp = list_post.PostedTimestamp, // post_records.postedTimestamp
-        RateUnits = common.EGVForPatient.RateUnits,
+        RateUnits = rateUnits,
         Source = list_patient.SourceStream,
         Status = cols(7).flatMap { s => if (s.toString.trim.length == 0) None else Some(s) },
         TransmitterId = cols(2),
         TransmitterTicks = cols(3).toLong,
         Trend = cols(8),
         TrendRate = cols(9).toDouble,
-        Units = common.EGVForPatient.Units,
+        Units = units,
         Value = cols(6) match {
           case x if 40 to 400 contains x => Some(x.toInt)
           case _ => None

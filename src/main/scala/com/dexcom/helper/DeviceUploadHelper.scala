@@ -5,6 +5,7 @@ import com.dexcom.common.{CassandraQueries, Constants}
 import com.dexcom.connection.CassandraConnection
 import com.dexcom.dto.{AlertSetting, DeviceUploadForPatient}
 import com.dexcom.utils.Utils._
+import org.joda.time.DateTime
 
 import scala.collection.mutable.ListBuffer
 
@@ -139,7 +140,8 @@ class DeviceUploadHelper extends CassandraQueries {
       val device_upload_record = DeviceUploadForPatient(
         PatientId = row.getUUID("patient_id"),
         Model = row.getString("model"),
-        DeviceUploadDate = row.getTimestamp("device_upload_date"),
+        DeviceUploadDate = new DateTime(row.getTimestamp("device_upload_date")),
+        //row.get("device_upload_date", InstantCodec.instance).atOffset(ZoneOffset.UTC),//row.getTimestamp("device_upload_date"),
         Alerts = list_alerts, //getObject(row.getString("system.tojson(alerts)")),
         DisplayTimeOffset = row.getInt("display_time_offset"),
         IngestionTimestamp = row.getTimestamp("ingestion_timestamp"),
@@ -160,12 +162,13 @@ class DeviceUploadHelper extends CassandraQueries {
     cassandra_connection.closeConnection() //close cassandra connection
     list_device_upload_record.toList
   }
-  def getIndexForDeviceUpload(sourceData : DeviceUploadForPatient, destinationDataList : List[DeviceUploadForPatient]) : Int = {
+
+  def getIndexForDeviceUpload(sourceData: DeviceUploadForPatient, destinationDataList: List[DeviceUploadForPatient]): Int = {
     val index = destinationDataList.indexWhere {
       y =>
         y.PatientId.equals(sourceData.PatientId) &&
           y.Model.equals(sourceData.Model) &&
-          y.DeviceUploadDate.equals(sourceData.DeviceUploadDate) //check mapping of deviceUploadDate
+          formatDate(y.DeviceUploadDate.toString).equals(formatDate(sourceData.DeviceUploadDate.toString)) //check mapping of deviceUploadDate
     }
     index
   }

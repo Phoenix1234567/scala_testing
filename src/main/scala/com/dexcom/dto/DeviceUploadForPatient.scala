@@ -2,13 +2,15 @@ package com.dexcom.dto
 
 import java.util.{Date, UUID}
 
+import org.joda.time.DateTime
+
 /**
   * Created by gaurav.garg on 23-01-2017.
   */
 case class DeviceUploadForPatient(
                                    PatientId: UUID,
                                    Model: String,
-                                   DeviceUploadDate: Date,
+                                   DeviceUploadDate: DateTime,
                                    Alerts: List[AlertSetting],
                                    DisplayTimeOffset: Int,
                                    IngestionTimestamp: Date,
