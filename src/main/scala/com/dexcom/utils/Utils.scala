@@ -27,7 +27,11 @@ object Utils extends DexVictoriaConfigurations {
       case _ => new DateTime(this.postRecords.filter(_.PostId == postId).head.PostedTimestamp).toDateTime(DateTimeZone.UTC)
     }
 
-  //println(this.stringToDate("2014-05-23T20:06:17.1592279Z".substring(0, 11)+ "2014-05-23T20:06:17.1592279Z".substring(11).replaceAll("[0-9]", "0")))
+  /**
+    * This method parsed date
+    * @param dateString date to be parsed
+    * @return date in Date format
+    */
   def stringToDate(dateString: String): Option[Date] = {
 
     val df = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZ")
@@ -43,11 +47,16 @@ object Utils extends DexVictoriaConfigurations {
     }
   }
 
+  /**
+    * this method parsed date for Device_upload_date
+    * @param dateString date to be parsed
+    * @return date in Date format
+    */
   def formatDate(dateString: String): String = {
     val df = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-    val df2 = DateTimeFormat.forPattern("yyyy-MM-dd")
-    val temp2 = df.parseLocalDate(dateString)
-    df2.print(temp2)
+    val new_df = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val parsedDate = df.parseLocalDate(dateString)
+    new_df.print(parsedDate)
   }
 
   /**
@@ -72,6 +81,10 @@ object Utils extends DexVictoriaConfigurations {
       case _ => None
     }
 
+  /**
+    * This method is for Units ,RateUnits of Glucose and calibration
+    * @return displayMode
+    */
   def displayMode: String = {
     latestDeviceSettings match {
       case Some(data) =>
@@ -80,6 +93,10 @@ object Utils extends DexVictoriaConfigurations {
     } //.fold("mg/dL")(rec => if (rec.IsMmolDisplayMode) "mmol/L" else "mg/dL")
   }
 
+  /**
+    * This method for other tables
+    * @return device model
+    */
   def deviceModel: String = {
     latestDeviceSettings match {
       case None => G5
@@ -88,6 +105,12 @@ object Utils extends DexVictoriaConfigurations {
     }
   }
 
+  /**
+    * This method return device_model fro Device_upload_for_patient
+    * @param softwareNumber of device_setting_records
+    * @param softwareVersion of device_setting_records
+    * @return  Device model
+    */
   def selectDeviceModel(softwareNumber: String, softwareVersion: String): String = {
     //  In the Device Settings Record, there is a field (VersionNumber) that is a string value that corresponds to the
     //  software version of the receiver.
