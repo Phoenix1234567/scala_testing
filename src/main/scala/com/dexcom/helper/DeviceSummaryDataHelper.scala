@@ -22,7 +22,7 @@ class DeviceSummaryDataHelper extends DexVictoriaConfigurations with CassandraQu
 
     val list_device_summary = new ListBuffer[DeviceSummary]
     val post_records = postRecords
-    val device_summary_csv = scala.io.Source.fromFile(device_settings_record_path)
+    //val device_summary_csv = scala.io.Source.fromFile(device_settings_record_path)
 
     for (
       list_post <- post_records;
@@ -37,7 +37,7 @@ class DeviceSummaryDataHelper extends DexVictoriaConfigurations with CassandraQu
       )
       list_device_summary += device_summary
     }
-    device_summary_csv.close()
+   // device_summary_csv.close()
 
     list_device_summary.toList
   }

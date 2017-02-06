@@ -20,6 +20,12 @@ object Utils extends DexVictoriaConfigurations {
 
   val glucoseDataHelper = new GlucoseDataHelper
 
+  /**
+    *  Get path of the CSVs
+    * @param postId postId
+    * @param path   path to csv folder
+    * @return  absolute path to csvs
+    */
   def getpath(postId: String, path: String): String = {
     if (System.getProperty("os.name").toLowerCase.startsWith("windows"))
       common_path + "\\" + postId + "\\" + path
@@ -106,7 +112,7 @@ object Utils extends DexVictoriaConfigurations {
       case Some(data) =>
         if (data.IsMmolDisplayMode) "mmol/L" else "mg/dL"
       case _ => "mg/dL"
-    } //.fold("mg/dL")(rec => if (rec.IsMmolDisplayMode) "mmol/L" else "mg/dL")
+    }
   }
 
   /**
