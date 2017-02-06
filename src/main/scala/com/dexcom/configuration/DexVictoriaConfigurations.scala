@@ -9,6 +9,9 @@ trait DexVictoriaConfigurations {
 
   val conf = ConfigFactory.load("application.conf")
 
+  //read path
+  lazy val common_path = conf.getString("victoriaSourceCSVs.allCSVsPath1")
+
   //read CSV path for Glucose Record
   lazy val glucose_record_path = conf.getString("victoriaSourceCSVs.allCSVsPath") + "/GlucoseRecord.csv"
 

@@ -27,37 +27,38 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
   def getGlucoseRecordsFromCSV: Option[List[EGVForPatient]] = {
     val list_glucose_record = new ListBuffer[EGVForPatient]
     val post_records = postRecords
-    val glucose_record_csv = scala.io.Source.fromFile(glucose_record_path)
 
-    for (
-      list_post <- post_records;
-      list_patient <- patientRecords();
-      line <- glucose_record_csv.getLines().drop(1)
-    ) {
-      val cols = line.split(Constants.Splitter).map(_.trim)
-      val glucose_record = EGVForPatient(
-        PatientId = list_patient.PatientId,
-        SystemTime = stringToDate(cols(0)).get,
-        PostId = list_post.PostId,
-        DisplayTime = stringToDate(cols(1)).get,
-        IngestionTimestamp = list_post.PostedTimestamp, // post_records.postedTimestamp
-        RateUnits = rateUnits,
-        Source = list_patient.SourceStream,
-        Status = cols(7).flatMap { s => if (s.toString.trim.length == 0) None else Some(s) },
-        TransmitterId = cols(2),
-        TransmitterTicks = cols(3).toLong,
-        Trend = cols(8),
-        TrendRate = cols(9).toDouble,
-        Units = units,
-        Value = cols(6) match {
-          case x if 40 to 400 contains x => Some(x.toInt)
-          case _ => None
-        }
-      )
-      list_glucose_record += glucose_record
+    for (list_post <- post_records) {
+      val glucose_record_csv = scala.io.Source.fromFile(getpath(list_post.PostId.toString, Constants.Glucose))
+
+      for (
+        list_patient <- patientRecords();
+        line <- glucose_record_csv.getLines().drop(1)
+      ) {
+        val cols = line.split(Constants.Splitter).map(_.trim)
+        val glucose_record = EGVForPatient(
+          PatientId = list_patient.PatientId,
+          SystemTime = stringToDate(cols(0)).get,
+          PostId = list_post.PostId,
+          DisplayTime = stringToDate(cols(1)).get,
+          IngestionTimestamp = list_post.PostedTimestamp, // post_records.postedTimestamp
+          RateUnits = rateUnits,
+          Source = list_patient.SourceStream,
+          Status = cols(7).flatMap { s => if (s.toString.trim.length == 0) None else Some(s) },
+          TransmitterId = cols(2),
+          TransmitterTicks = cols(3).toLong,
+          Trend = cols(8),
+          TrendRate = cols(9).toDouble,
+          Units = units,
+          Value = cols(6) match {
+            case x if 40 to 400 contains x => Some(x.toInt)
+            case _ => None
+          }
+        )
+        list_glucose_record += glucose_record
+      }
+      glucose_record_csv.close()
     }
-    glucose_record_csv.close()
-
     Some(list_glucose_record.toList)
   }
 

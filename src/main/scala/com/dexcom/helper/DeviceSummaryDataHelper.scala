@@ -26,10 +26,8 @@ class DeviceSummaryDataHelper extends DexVictoriaConfigurations with CassandraQu
 
     for (
       list_post <- post_records;
-      list_patient <- patientRecords() //;
-    //line <- device_summary_csv.getLines().drop(1)
+      list_patient <- patientRecords()
     ) {
-      //val cols = line.split(Constants.Splitter).map(_.trim)
       val device_summary = DeviceSummary(
         PatientId = list_patient.PatientId,
         Model = deviceModel,

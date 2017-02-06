@@ -19,10 +19,10 @@ class DeviceUploadHelper extends CassandraQueries {
     *
     * @return the list of AlertSetting records
     */
-  def getAlertsRecordFromCSV: List[AlertSetting] = {
+  def getAlertsRecordFromCSV(postId: String): List[AlertSetting] = {
 
     val list_alerts = new ListBuffer[AlertSetting]
-    val alerts_record_csv = scala.io.Source.fromFile(alert_settings_record_path)
+    val alerts_record_csv = scala.io.Source.fromFile(getpath(postId, Constants.Alert))
 
     for (line <- alerts_record_csv.getLines().drop(1)) {
       val cols = line.split(Constants.Splitter).map(_.trim)
@@ -68,38 +68,40 @@ class DeviceUploadHelper extends CassandraQueries {
   def getDeviceUploadForPatientFromCSV: Option[List[DeviceUploadForPatient]] = {
     val list_device_record = new ListBuffer[DeviceUploadForPatient]
     val post_records = postRecords
-    val device_record_csv = scala.io.Source.fromFile(device_settings_record_path)
 
     try {
-      for (
-        list_post <- post_records;
-        list_patient <- patientRecords();
-        line <- device_record_csv.getLines().drop(1)
-      ) {
-        val cols = line.split(Constants.Splitter).map(_.trim)
-        val device_record = DeviceUploadForPatient(
-          PatientId = list_patient.PatientId,
-          Model = selectDeviceModel(cols(9), cols(10)),
-          DeviceUploadDate = uploadDate(list_post.PostId), //val uploadDate = lastEgvDateOrDefault(manifests.toSeq, post_records.postedTimestamp)
-          Alerts = getAlertsRecordFromCSV,
-          DisplayTimeOffset = cols(8).toInt, //TODO
-          IngestionTimestamp = list_post.PostedTimestamp,
-          Is24HourMode = cols(4).toBoolean, //TODO
-          IsBlindedMode = cols(5).toBoolean, //TODO
-          IsMmolDisplayMode = cols(3).toBoolean, //TODO
-          Language = cols(2), //TODO
-          SerialNumber = serialNumber,
-          SoftwareNumber = cols(9), //TODO
-          SoftwareVersion = cols(10), //TODO
-          SystemTimeOffset = cols(7).toInt, //TODO
-          TransmitterId = cols(6),
-          Udi = None,
-          RecordedSystemTime = stringToDate(cols(0))
-        )
-        list_device_record += device_record
-      }
-      device_record_csv.close()
+      for (list_post <- post_records) {
+        val device_record_csv = scala.io.Source.fromFile(getpath(list_post.PostId.toString, Constants.Device))
 
+        for (
+          list_post <- post_records;
+          list_patient <- patientRecords();
+          line <- device_record_csv.getLines().drop(1)
+        ) {
+          val cols = line.split(Constants.Splitter).map(_.trim)
+          val device_record = DeviceUploadForPatient(
+            PatientId = list_patient.PatientId,
+            Model = selectDeviceModel(cols(9), cols(10)),
+            DeviceUploadDate = uploadDate(list_post.PostId), //val uploadDate = lastEgvDateOrDefault(manifests.toSeq, post_records.postedTimestamp)
+            Alerts = getAlertsRecordFromCSV(list_post.PostId.toString),
+            DisplayTimeOffset = cols(8).toInt, //TODO
+            IngestionTimestamp = list_post.PostedTimestamp,
+            Is24HourMode = cols(4).toBoolean, //TODO
+            IsBlindedMode = cols(5).toBoolean, //TODO
+            IsMmolDisplayMode = cols(3).toBoolean, //TODO
+            Language = cols(2), //TODO
+            SerialNumber = serialNumber,
+            SoftwareNumber = cols(9), //TODO
+            SoftwareVersion = cols(10), //TODO
+            SystemTimeOffset = cols(7).toInt, //TODO
+            TransmitterId = cols(6),
+            Udi = None,
+            RecordedSystemTime = stringToDate(cols(0))
+          )
+          list_device_record += device_record
+        }
+        device_record_csv.close()
+      }
       Some(list_device_record.toList)
     } catch {
       case e: Exception => None

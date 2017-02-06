@@ -23,29 +23,30 @@ class CalibrationDataHelper extends DexVictoriaConfigurations with CassandraQuer
   def getMeterRecordsFromCSV: List[MeterRecord] = {
     val list_meter_record = new ListBuffer[MeterRecord]
     val post_records = postRecords
-    val meter_record_csv = scala.io.Source.fromFile(meter_record_path)
 
-    for (
-      list_post <- post_records;
-      list_patient <- patientRecords();
-      line <- meter_record_csv.getLines().drop(1)
-    ) {
-      val cols = line.split(Constants.Splitter).map(_.trim)
-      val meter_record = dto.MeterRecord(
-        PatientId = list_patient.PatientId,
-        SystemTime = stringToDate(cols(4)).get,
-        DisplayTime = stringToDate(cols(5)).get,
-        TransmitterId = cols(2),
-        IngestionTimestamp = list_post.PostedTimestamp,
-        Units = displayMode,
-        Value = cols(6).toInt,
-        EntryType = cols(7),
-        Model = deviceModel
-      )
-      list_meter_record += meter_record
+    for (list_post <- post_records) {
+      val meter_record_csv = scala.io.Source.fromFile(getpath(list_post.PostId.toString, Constants.Meter))
+
+      for (
+        list_patient <- patientRecords();
+        line <- meter_record_csv.getLines().drop(1)
+      ) {
+        val cols = line.split(Constants.Splitter).map(_.trim)
+        val meter_record = dto.MeterRecord(
+          PatientId = list_patient.PatientId,
+          SystemTime = stringToDate(cols(4)).get,
+          DisplayTime = stringToDate(cols(5)).get,
+          TransmitterId = cols(2),
+          IngestionTimestamp = list_post.PostedTimestamp,
+          Units = displayMode,
+          Value = cols(6).toInt,
+          EntryType = cols(7),
+          Model = deviceModel
+        )
+        list_meter_record += meter_record
+      }
+      meter_record_csv.close()
     }
-    meter_record_csv.close()
-
     list_meter_record.toList
   }
 

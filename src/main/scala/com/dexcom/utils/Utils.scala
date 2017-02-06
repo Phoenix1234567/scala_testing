@@ -20,6 +20,19 @@ object Utils extends DexVictoriaConfigurations {
 
   val glucoseDataHelper = new GlucoseDataHelper
 
+  def getpath(postId: String, path: String): String = {
+    if (System.getProperty("os.name").toLowerCase.startsWith("windows"))
+      common_path + "\\" + postId + "\\" + path
+    else
+      common_path + "/" + postId + "/" + path
+  }
+
+  /**
+    * this method returns the device_upload_date for deviceUploadForPatient
+    *
+    * @param postId for which device_upload_date to be determined
+    * @return the device_upload_date
+    */
   def uploadDate(postId: UUID): DateTime =
     glucoseDataHelper.getGlucoseRecordsFromCSV match {
       case Some(data) =>
@@ -29,6 +42,7 @@ object Utils extends DexVictoriaConfigurations {
 
   /**
     * This method parsed date
+    *
     * @param dateString date to be parsed
     * @return date in Date format
     */
@@ -49,6 +63,7 @@ object Utils extends DexVictoriaConfigurations {
 
   /**
     * this method parsed date for Device_upload_date
+    *
     * @param dateString date to be parsed
     * @return date in Date format
     */
@@ -83,6 +98,7 @@ object Utils extends DexVictoriaConfigurations {
 
   /**
     * This method is for Units ,RateUnits of Glucose and calibration
+    *
     * @return displayMode
     */
   def displayMode: String = {
@@ -95,6 +111,7 @@ object Utils extends DexVictoriaConfigurations {
 
   /**
     * This method for other tables
+    *
     * @return device model
     */
   def deviceModel: String = {
@@ -107,9 +124,10 @@ object Utils extends DexVictoriaConfigurations {
 
   /**
     * This method return device_model fro Device_upload_for_patient
-    * @param softwareNumber of device_setting_records
+    *
+    * @param softwareNumber  of device_setting_records
     * @param softwareVersion of device_setting_records
-    * @return  Device model
+    * @return Device model
     */
   def selectDeviceModel(softwareNumber: String, softwareVersion: String): String = {
     //  In the Device Settings Record, there is a field (VersionNumber) that is a string value that corresponds to the

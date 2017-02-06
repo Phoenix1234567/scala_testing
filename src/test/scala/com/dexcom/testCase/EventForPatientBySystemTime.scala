@@ -22,7 +22,7 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
   override def beforeAll() = {
     cassandraConnection = new CassandraConnection()
     userEventDataHelper = new UserEventDataHelper(cassandraConnection.getConnection)
-    recordsFromCassandra = userEventDataHelper.getRecordFromCassandra()
+    recordsFromCassandra = userEventDataHelper.getRecordFromCassandra
     recordsFromCSV = userEventDataHelper.getRecordsFromCSV
     initNameAndSubtypeMapping
 

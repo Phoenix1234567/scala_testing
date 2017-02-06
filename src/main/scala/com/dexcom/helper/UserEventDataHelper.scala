@@ -15,7 +15,7 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
 
   // fetch records from cassandra
 
-  def getRecordFromCassandra(): List[UserEventRecord] = {
+  def getRecordFromCassandra: List[UserEventRecord] = {
     val list_user_event_record = new ListBuffer[UserEventRecord]
     val resultSet = session.execute(GET_EVENT_FOR_PATIENT_BY_SYSTEM_TIME)
     while (!resultSet.isExhausted) {
@@ -43,26 +43,28 @@ class UserEventDataHelper(session: Session) extends DexVictoriaConfigurations wi
 
   def getRecordsFromCSV: List[UserEventRecord] = {
     val list_user_event_records = new ListBuffer[UserEventRecord]
-
-    val user_event_record_csv = scala.io.Source.fromFile(user_event_path)
     val post_records = postRecords
 
-    for (list_post <- post_records; patient <- patientRecords(); line <- user_event_record_csv.getLines().drop(1)) {
-      val cols = line.split(Constants.Splitter).map(_.trim)
-      val event_record = new UserEventRecord()
-      event_record.setPatientID(patient.PatientId)
-      event_record.setDisplayTime(stringToDate(cols(3)).get)
-      event_record.setName(cols(4))
-      event_record.setModel(deviceModel)
-      event_record.setIngestionTimestamp(list_post.PostedTimestamp)
-      event_record.setPostID(list_post.PostId)
-      event_record.setSubType(cols(5))
-      event_record.setSystemTime(stringToDate(cols(2)).get)
-      event_record.setUnits(cols(7))
-      event_record.setValue(cols(6))
-      list_user_event_records += event_record
+    for (list_post <- post_records) {
+      val user_event_record_csv = scala.io.Source.fromFile(getpath(list_post.PostId.toString, Constants.UserEvent))
+
+      for (patient <- patientRecords(); line <- user_event_record_csv.getLines().drop(1)) {
+        val cols = line.split(Constants.Splitter).map(_.trim)
+        val event_record = new UserEventRecord()
+        event_record.setPatientID(patient.PatientId)
+        event_record.setDisplayTime(stringToDate(cols(3)).get)
+        event_record.setName(cols(4))
+        event_record.setModel(deviceModel)
+        event_record.setIngestionTimestamp(list_post.PostedTimestamp)
+        event_record.setPostID(list_post.PostId)
+        event_record.setSubType(cols(5))
+        event_record.setSystemTime(stringToDate(cols(2)).get)
+        event_record.setUnits(cols(7))
+        event_record.setValue(cols(6))
+        list_user_event_records += event_record
+      }
+      user_event_record_csv.close()
     }
-    user_event_record_csv.close()
     list_user_event_records.toList
   }
 
