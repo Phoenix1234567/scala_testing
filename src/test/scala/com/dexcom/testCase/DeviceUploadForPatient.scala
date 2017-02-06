@@ -4,6 +4,7 @@ package com.dexcom.testCase
 import java.util.{Date, UUID}
 
 import com.dexcom.helper.DeviceUploadHelper
+import org.joda.time.DateTime
 import org.scalatest.FunSuite
 
 /**
@@ -249,7 +250,7 @@ class DeviceUploadForPatient extends FunSuite {
       x =>
         assert(x.DeviceUploadDate !== null)
         assert(x.DeviceUploadDate !== "")
-        assert(x.DeviceUploadDate.isInstanceOf[Date])
+        assert(x.DeviceUploadDate.isInstanceOf[DateTime])
     }
     list_device_upload_csv.foreach {
       x =>
@@ -295,14 +296,14 @@ class DeviceUploadForPatient extends FunSuite {
     for (device_records <- list_device_upload_cassandra) {
       for (alerts_record <- device_records.Alerts) {
 
-        assert(alerts_record.name != null && alerts_record.name != "" && alerts_record.name.isInstanceOf[String])
-        assert(alerts_record.value != null && alerts_record.value != "" && alerts_record.value.isInstanceOf[Int])
-        assert(alerts_record.system_time != null && alerts_record.system_time != "" && alerts_record.system_time.isInstanceOf[Date])
-        assert(alerts_record.display_time != null && alerts_record.display_time != "" && alerts_record.display_time.isInstanceOf[Date])
-        assert(alerts_record.units != null && alerts_record.units != "" && alerts_record.units.isInstanceOf[String])
-        assert(alerts_record.delay != null && alerts_record.delay != "" && alerts_record.delay.isInstanceOf[Int])
-        assert(alerts_record.snooze != null && alerts_record.snooze != "" && alerts_record.snooze.isInstanceOf[Int])
-        assert(alerts_record.enabled != null && alerts_record.enabled != "" && alerts_record.enabled.isInstanceOf[Boolean])
+        assert(alerts_record.name !== null && (alerts_record.name !== "") && alerts_record.name.isInstanceOf[String])
+        assert(alerts_record.value !== null && (alerts_record.value !== "") && alerts_record.value.isInstanceOf[Int])
+        assert(alerts_record.system_time !== null && (alerts_record.system_time !== "") && alerts_record.system_time.isInstanceOf[Date])
+        assert(alerts_record.display_time !== null && (alerts_record.display_time !== "") && alerts_record.display_time.isInstanceOf[Date])
+        assert(alerts_record.units !== null && (alerts_record.units !== "") && alerts_record.units.isInstanceOf[String])
+        assert(alerts_record.delay !== null && (alerts_record.delay !== "") && alerts_record.delay.isInstanceOf[Int])
+        assert(alerts_record.snooze !== null && (alerts_record.snooze !== "") && alerts_record.snooze.isInstanceOf[Int])
+        assert(alerts_record.enabled !== null && (alerts_record.enabled !== "") && alerts_record.enabled.isInstanceOf[Boolean])
       }
     }
     list_device_upload_csv.foreach {
