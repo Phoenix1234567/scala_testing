@@ -7,7 +7,6 @@ import java.util.{Date, UUID}
   */
 case class MeterRecord(
                         PatientId: UUID,
-                        //PostId : UUID,
                         SystemTime: Date,
                         DisplayTime: Date,
                         TransmitterId: String,
@@ -16,6 +15,4 @@ case class MeterRecord(
                         Value: Int,
                         EntryType: String,
                         Model: String
-
-
                       )
