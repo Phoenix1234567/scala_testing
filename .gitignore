@@ -8,7 +8,7 @@
 .lib/
 project/
 target/
-src/main/resources/application.conf
+
 
 # Scala-IDE specific
 .scala_dependencies
