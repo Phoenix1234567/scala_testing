@@ -12,6 +12,15 @@ libraryDependencies ++= Seq(
   "joda-time" % "joda-time" % "2.9.7" //for time parsing
 )
 
+assemblyMergeStrategy in assembly := {
+  case x if x.endsWith("io.netty.versions.properties") => MergeStrategy.first
+  // case "META-INF/io.netty.versions.properties" => MergeStrategy.first
+  case x =>
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
+}
+
+
 
 
 
