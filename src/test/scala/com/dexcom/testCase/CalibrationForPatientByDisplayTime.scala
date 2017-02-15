@@ -115,8 +115,6 @@ class CalibrationForPatientByDisplayTime extends FunSuite {
   test("TC_371 --~> should verify TransmitterId of the CalibrationForPatientByDisplayTime in cassandra is populating properly") {
 
     //verify the results
-    //TODO
-    //check for null values in transmitter id , how to deal when transmitter id is null. Transmitter id can be empty & null
     list_meter_record_cassandra.foreach {
       x =>
         assert(x.TransmitterId.isInstanceOf[String])
@@ -150,7 +148,7 @@ class CalibrationForPatientByDisplayTime extends FunSuite {
         val index = meterRecordTestCase.getIndexForSystemTime(x, list_meter_record_cassandra)
         if (index != -1) {
           assert(x.Units === list_meter_record_cassandra(index).Units)
-          assert(list_meter_record_cassandra(index).Units === "mg/dL")
+          assert(list_meter_record_cassandra(index).Units === "mg/dL" || list_meter_record_cassandra(index).Units === "mmol/L")
         } else {
           fail(s"Record not found : $x")
         }
@@ -170,8 +168,8 @@ class CalibrationForPatientByDisplayTime extends FunSuite {
       x =>
         val index = meterRecordTestCase.getIndexForSystemTime(x, list_meter_record_cassandra)
         if (index != -1) {
-          //          assert(x.Value === list_meter_record_cassandra(index).Value)
-          //          assert((20 to 600 by 1) contains list_meter_record_cassandra(index).Value)
+                    assert(x.Value === list_meter_record_cassandra(index).Value)
+                    assert((20 to 600 by 1) contains list_meter_record_cassandra(index).Value)
         }
         else {
           fail(s"Record not found : $x")

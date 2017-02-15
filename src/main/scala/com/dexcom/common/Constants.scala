@@ -14,6 +14,7 @@ object Constants {
   val Device = "DeviceSettingsRecord.csv"
   val Meter = "MeterRecord.csv"
   val Sensor = "SensorRecord.csv"
-  val UserEvent = "UserEventRecord.csvs"
+  val UserEvent = "UserEventRecord.csv"
+  val ConfigPath = "../resources/application.conf"
 }
 

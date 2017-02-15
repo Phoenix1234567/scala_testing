@@ -84,17 +84,17 @@ class DeviceUploadHelper extends CassandraQueries {
             Model = selectDeviceModel(cols(9), cols(10)),
             DeviceUploadDate = uploadDate(list_post.PostId), //val uploadDate = lastEgvDateOrDefault(manifests.toSeq, post_records.postedTimestamp)
             Alerts = getAlertsRecordFromCSV(list_post.PostId.toString),
-            DisplayTimeOffset = cols(8).toInt, //TODO
+            DisplayTimeOffset = cols(8).toInt,
             IngestionTimestamp = list_post.PostedTimestamp,
-            Is24HourMode = cols(4).toBoolean, //TODO
-            IsBlindedMode = cols(5).toBoolean, //TODO
-            IsMmolDisplayMode = cols(3).toBoolean, //TODO
-            Language = cols(2), //TODO
+            Is24HourMode = cols(4).toBoolean,
+            IsBlindedMode = cols(5).toBoolean,
+            IsMmolDisplayMode = cols(3).toBoolean,
+            Language = cols(2),
             SerialNumber = serialNumber,
-            SoftwareNumber = cols(9), //TODO
-            SoftwareVersion = cols(10), //TODO
-            SystemTimeOffset = cols(7).toInt, //TODO
-            TransmitterId = cols(6),
+            SoftwareNumber = cols(9),
+            SoftwareVersion = cols(10),
+            SystemTimeOffset = cols(7).toInt,
+            TransmitterId = list_patient.TransmitterNumber,//cols(6),
             Udi = None,
             RecordedSystemTime = stringToDate(cols(0))
           )

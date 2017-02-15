@@ -50,10 +50,11 @@ class GlucoseDataHelper extends DexVictoriaConfigurations with CassandraQueries 
           Trend = cols(8),
           TrendRate = cols(9).toDouble,
           Units = units,
-          Value = cols(6) match {
-            case x if 40 to 400 contains x => Some(x.toInt)
-            case _ => None
-          }
+          Value = Some(cols(6).toInt)
+//          Value = cols(6) match {
+//            case x if 40 to 400 contains x => Some(x.toInt)
+//            case _ => None
+//          }
         )
         list_glucose_record += glucose_record
       }

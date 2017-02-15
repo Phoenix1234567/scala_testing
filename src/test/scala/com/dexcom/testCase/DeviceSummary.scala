@@ -95,7 +95,7 @@ class DeviceSummary extends FunSuite {
     }
   }
 
-  test("TC_380 --~> should verify LastUpdateDate of DeviceSummary in Cassandra is populating properly") {
+  test("TC_380 --~> should verify PatientId of DeviceSummary in Cassandra is populating properly") {
     list_device_summary_cassandra.foreach {
       x =>
         assert(x.PatientId !== null)

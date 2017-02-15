@@ -1,41 +1,52 @@
 package com.dexcom.configuration
 
-import com.typesafe.config.ConfigFactory
+import java.io.File
+
+import com.dexcom.common.Constants
+import com.typesafe.config.{Config, ConfigFactory}
 
 /**
   * Created by gaurav.garg on 05-01-2017.
   */
 trait DexVictoriaConfigurations {
 
-  val conf = ConfigFactory.load("application.conf")
+  var conf: Config = _
 
+  def initConf: Config = {
+    conf = ConfigFactory.parseFileAnySyntax(new File(Constants.ConfigPath))
+    if (conf.isEmpty || conf == null)
+      conf = ConfigFactory.load("application.conf")
+    conf
+  }
+
+  lazy val config = initConf
   //read path
-  lazy val common_path = conf.getString("victoriaSourceCSVs.allCSVsPath")
+  lazy val common_path = config.getString("victoriaSourceCSVs.allCSVsPath")
 
   //read CSV path of patient.csv
-  lazy val patient_records_path = conf.getString("victoriaSourceCSVs.patientPath")
+  lazy val patient_records_path = config.getString("victoriaSourceCSVs.patientPath")
 
   //read CSV path of postIds.csv
-  lazy val post_path = conf.getString("victoriaSourceCSVs.postPath")
+  lazy val post_path = config.getString("victoriaSourceCSVs.postPath")
 
   //cassandra hostname
-  lazy val hostname = conf.getString("cassandra.host")
+  lazy val hostname = config.getString("cassandra.host")
 
   //cassandra port
-  lazy val port = conf.getInt("cassandra.port")
+  lazy val port = config.getInt("cassandra.port")
 
   //read userName to access cassandra
-  lazy val userName = conf.getString("cassandra.userName")
+  lazy val userName = config.getString("cassandra.userName")
 
   //read password to access cassandra
-  lazy val password = conf.getString("cassandra.password")
+  lazy val password = config.getString("cassandra.password")
 
   //read truestore path
-  lazy val trueStorePath = conf.getString("cassandra.trueStorePath")
+  lazy val trueStorePath = config.getString("cassandra.trueStorePath")
 
   //read trueStore password
-  lazy val trueStorePassword = conf.getString("cassandra.trueStorePassword")
+  lazy val trueStorePassword = config.getString("cassandra.trueStorePassword")
 
   //read keySpaceName
-  lazy val keySpaceName = conf.getString("cassandra.keySpaceName")
+  lazy val keySpaceName = config.getString("cassandra.keySpaceName")
 }

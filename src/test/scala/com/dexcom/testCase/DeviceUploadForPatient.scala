@@ -4,6 +4,7 @@ package com.dexcom.testCase
 import java.util.{Date, UUID}
 
 import com.dexcom.helper.DeviceUploadHelper
+import com.dexcom.utils.Utils
 import org.joda.time.DateTime
 import org.scalatest.FunSuite
 
@@ -256,7 +257,7 @@ class DeviceUploadForPatient extends FunSuite {
       x =>
         val index = deviceUploadTestCase.getIndexForDeviceUpload(x, list_device_upload_cassandra)
         if (index != -1)
-          assert(x.DeviceUploadDate === list_device_upload_cassandra(index).DeviceUploadDate)
+          assert(Utils.formatDate(x.DeviceUploadDate.toString) === Utils.formatDate(list_device_upload_cassandra(index).DeviceUploadDate.toString))
         else
           fail(s"Record not found: $x")
     }

@@ -89,7 +89,6 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
       x =>
         val index = userEventDataHelper.getIndexForSystemTime(x, recordsFromCassandra)
         if (index != -1) {
-          println(index)
           assert(x.Value === recordsFromCassandra(index).Value)
 
           if (x.Name === "Carbs" || x.Name === "Insulin" || x.Name === "Exercise")
@@ -211,6 +210,5 @@ class EventForPatientBySystemTime extends FunSuite with CassandraQueries with Be
     recordsFromCSV = null
     cassandraConnection = null
     userEventDataHelper = null
-    println("afterAll")
   }
 }
